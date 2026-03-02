@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { sequelize } from './models';
+import authRoutes from './routes/authRoutes';
 //import das routes aqui
 
 
@@ -16,8 +17,17 @@ app.use(cors({
 
 
 app.use(express.json());
+app.use('/api/auth', authRoutes);
 
 //app.use('/api', nomedasrotas);
+
+
+
+
+
+
+
+
 
 sequelize.authenticate()
   .then(() => {
