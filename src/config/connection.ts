@@ -10,7 +10,11 @@ export const sequelize = new Sequelize(
     dbConfig.password,
     {
         host: dbConfig.host,
-        dialect: dbConfig.dialect,  
-        logging: false, 
+        dialect: dbConfig.dialect,
+        logging: false,
     }
 )
+
+export async function initializeDatabase() {
+    await sequelize.sync({ alter: true });
+}

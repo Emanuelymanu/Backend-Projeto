@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import CadastroUsuarios from '../models/CadastroUsuariosModel';
+import { usuarios } from '../models-auto/usuarios';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
@@ -25,7 +25,7 @@ export class LoginController {
 
             }
 
-            const usuario = await CadastroUsuarios.findOne({
+            const usuario = await usuarios.findOne({
                 where: { email }
             });
             if (!usuario) {
@@ -42,7 +42,7 @@ export class LoginController {
             }
 
             const token = jwt.sign({
-                id: usuario.id,
+                id: usuario.id_usuario,
                 email: usuario.email,
                 nome: usuario.nome
             },

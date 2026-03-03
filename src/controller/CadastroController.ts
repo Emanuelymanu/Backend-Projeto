@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import CadastroUsuarios from '../models/CadastroUsuariosModel';
+import { usuarios } from '../models-auto/usuarios';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
@@ -10,6 +10,7 @@ export class CadastroController {
 
     async cadastro(req: Request, res: Response) {
         try {
+
             const { nome, email, senha, cpf } = req.body;
 
             if (!nome || !email || !senha || !cpf) {
@@ -18,33 +19,33 @@ export class CadastroController {
                 })
             }
 
-            const emailExiste = await CadastroUsuarios.findOne({ where: { email } });
+            const emailExiste = await usuarios.findOne({ where: { email } });
             if (emailExiste) {
                 return res.status(400).json({
                     erro: 'Este email já está cadastrado'
                 });
             }
 
-            const cpfExiste = await CadastroUsuarios.findOne({ where: { cpf } });
+            const cpfExiste = await usuarios.findOne({ where: { cpf } });
             if (cpfExiste) {
                 return res.status(400).json({
                     erro: 'Este CPF já está cadastrado'
                 })
             }
 
-            const usuario = await CadastroUsuarios.create({
+            const usuario = await usuarios.create({
                 nome,
                 email,
                 senha,
                 cpf: cpf.replace(/\D/g, '')
             });
 
-            const usuarioSemSenha = usuario.toJSON();
-            delete usuarioSemSenha.senha;
+            const UsuarioemSenha = usuario.toJSON();
+            delete UsuarioemSenha.senha;
 
             res.status(201).json({
                 message: 'Usuário cadastrado com sucesso',
-                usuario: usuarioSemSenha
+                usuario: UsuarioemSenha
             });
 
         } catch (error: any) {
@@ -54,7 +55,7 @@ export class CadastroController {
             }
             console.error('Erro no cadastro:', error);
             return res.status(500).json({
-                erro: 'Erro interno do servidor'
+                erro: error.message
             });
         }
     }

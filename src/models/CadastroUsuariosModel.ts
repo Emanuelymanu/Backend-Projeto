@@ -65,6 +65,7 @@ CadastroUsuarios.init(
     {
         sequelize,
         tableName: "usuarios",
+        timestamps: false,
         hooks:{
             beforeCreate: async(usuario: CadastroUsuarios) => {
                 if (usuario.senha){
