@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
+import { sequelize } from '../config/connection';
 import { usuarios } from '../models-auto/usuarios';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { initModels } from '../models-auto/init-models';
+const models = initModels(sequelize);
 
 
 const JWT_SECRET = process.env.JWT_SECRET_KEY || 'sua_chave';
