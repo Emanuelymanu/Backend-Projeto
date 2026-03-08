@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { leituras, leiturasId } from './leituras';
 import type { tags, tagsId } from './tags';
+import bcrypt from 'bcrypt';
 
 export interface usuariosAttributes {
   id_usuario: number;
@@ -22,6 +23,8 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
   email!: string;
   cpf!: string;
   senha!: string;
+
+  
 
   // usuarios hasMany leituras via id_usuario
   leituras!: leituras[];
@@ -50,45 +53,79 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
 
   static initModel(sequelize: Sequelize.Sequelize): typeof usuarios {
     return usuarios.init({
-    id_usuario: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    nome: {
-      type: DataTypes.STRING(200),
-      allowNull: false,
-      defaultValue: ""
-    },
-    email: {
-      type: DataTypes.STRING(200),
-      allowNull: false,
-      defaultValue: ""
-    },
-    cpf: {
-      type: DataTypes.STRING(500),
-      allowNull: false,
-      defaultValue: ""
-    },
-    senha: {
-      type: DataTypes.STRING(500),
-      allowNull: false,
-      defaultValue: ""
-    }
-  }, {
-    sequelize,
-    tableName: 'usuarios',
-    timestamps: false,
-    indexes: [
-      {
-        name: "PRIMARY",
-        unique: true,
-        using: "BTREE",
-        fields: [
-          { name: "id_usuario" },
-        ]
+      id_usuario: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+        autoIncrement: true
       },
-    ]
-  });
+      nome: {
+        type: DataTypes.STRING(200),
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: 'O nome é obrigatório'
+          }
+        }
+      },
+      email: {
+        type: DataTypes.STRING(200),
+        allowNull: false,
+        unique: true,
+        validate: {
+          isEmail: {
+            msg: 'O email deve ser válido'
+          },
+          notEmpty: {
+            msg: 'O email é obrigatório'
+          }
+        }
+      },
+      cpf: {
+        type: DataTypes.STRING(11),
+        allowNull: false,
+        unique: true,
+        validate: {
+
+          len: { args: [11, 11], msg: 'O CPF é obrigatório' }
+        }
+
+      },
+      senha: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        validate: {
+          len: { args: [6, 100], msg: 'A senha deve conter no mínimo 6 caracteres' },
+        }
+      }
+    }, {
+      sequelize,
+      tableName: 'usuarios',
+      timestamps: true,
+      hooks: {
+        beforeCreate: async (usuario: usuarios) => {
+          if (usuario.senha) {
+            const salt = await bcrypt.genSalt(10);
+            usuario.senha = await bcrypt.hash(usuario.senha, salt);
+          }
+        },
+        beforeUpdate: async (usuario: usuarios) => {
+          if (usuario.senha) {
+            const salt = await bcrypt.genSalt(10);
+            usuario.senha = await bcrypt.hash(usuario.senha, salt);
+          }
+        }
+      },
+      indexes: [
+        {
+          name: "PRIMARY",
+          unique: true,
+          using: "BTREE",
+          fields: [
+            { name: "id_usuario" },
+          ]
+        },
+      ]
+    });
   }
 }

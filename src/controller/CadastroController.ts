@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
-import { sequelize } from '../config/connection';
 import { usuarios } from '../models-auto/usuarios';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { initModels } from '../models-auto/init-models';
-const models = initModels(sequelize);
 
 
 const JWT_SECRET = process.env.JWT_SECRET_KEY || 'sua_chave';
@@ -20,6 +17,13 @@ export class CadastroController {
                 return res.status(400).json({
                     erro: 'Todos os campos são obrigatórios'
                 })
+            }
+
+            const senhaForte = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+            if (!senhaForte.test(senha)) {
+                return res.status(400).json({
+                    erro: 'A senha deve conter no mínimo 6 caracteres, incluindo letras e números'
+                });
             }
 
             const emailExiste = await usuarios.findOne({ where: { email } });
@@ -61,6 +65,8 @@ export class CadastroController {
                 erro: error.message
             });
         }
+
+        
     }
 }
 

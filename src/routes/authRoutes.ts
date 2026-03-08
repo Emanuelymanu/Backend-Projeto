@@ -11,7 +11,10 @@ const loginController = new LoginController();
 const cadastroController = new CadastroController();
 
 router.post('/login', (req, res) => loginController.login(req, res));
-router.post('/usuarios/cadastro', (req, res) => cadastroController.cadastro(req, res));
-router.get('/perfil', authMiddleware, authMiddleware, LoginController.prototype.perfil);
+router.post('/cadastro', (req, res) => cadastroController.cadastro(req, res));
+
+
+
+router.get('/perfil', authMiddleware, (req, res) => loginController.perfil(req, res));
 
 export default router;
