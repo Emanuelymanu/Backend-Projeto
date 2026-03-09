@@ -3,7 +3,7 @@ import { usuarios } from '../models-auto/usuarios';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-const JWT_SECRET = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET || 'sua_chave';
 
 export class LoginController {
 
@@ -73,7 +73,7 @@ export class LoginController {
         try {
             const usuarioId = (req as any).usuario.id;
 
-            const usuario = await usuarioId.findByPk(usuarioId, {
+            const usuario = await usuarios.findByPk(usuarioId, {
                 attributes: { exclude: ['senha'] }
             });
 

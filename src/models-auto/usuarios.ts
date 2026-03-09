@@ -24,7 +24,7 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
   cpf!: string;
   senha!: string;
 
-  
+
 
   // usuarios hasMany leituras via id_usuario
   leituras!: leituras[];
@@ -101,7 +101,7 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
     }, {
       sequelize,
       tableName: 'usuarios',
-      timestamps: true,
+      timestamps: false,
       hooks: {
         beforeCreate: async (usuario: usuarios) => {
           if (usuario.senha) {

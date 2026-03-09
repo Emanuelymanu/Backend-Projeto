@@ -16,7 +16,7 @@ import type { livrosAttributes, livrosCreationAttributes } from "./livros";
 import { tags as _tags } from "./tags";
 import type { tagsAttributes, tagsCreationAttributes } from "./tags";
 import { usuarios as _usuarios } from "./usuarios";
-import type { usuariosAttributes, usuariosCreationAttributes } from "./usuarios";
+import type { usuarios, usuariosAttributes, usuariosCreationAttributes } from "./usuarios";
 
 export {
   _anotacoes as anotacoes,

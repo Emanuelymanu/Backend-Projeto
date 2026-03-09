@@ -7,19 +7,19 @@ export interface livrosAttributes {
   titulo: string;
   subtitulo?: string;
   autor: string;
-  isbn?: string;
+  tipo_obra: 'unico' | 'trilogia' | 'serie' | 'colecao';  // Tipo da obra
+  nome_serie?: string;
   ano_publicacao?: number;
   num_paginas: number;
   editora?: string;
   genero?: string;
-  capa?: string;
-  created_at: Date;
-  updated_at: Date;
+  capa?: string
+
 }
 
 export type livrosPk = "id_livro";
 export type livrosId = livros[livrosPk];
-export type livrosOptionalAttributes = "id_livro" | "subtitulo" | "isbn" | "ano_publicacao" | "num_paginas" | "editora" | "genero" | "capa" | "created_at" | "updated_at";
+export type livrosOptionalAttributes = "id_livro" | "subtitulo" | "tipo_obra"| "nome_serie" | "ano_publicacao" | "num_paginas" | "editora" | "genero" | "capa";
 export type livrosCreationAttributes = Optional<livrosAttributes, livrosOptionalAttributes>;
 
 export class livros extends Model<livrosAttributes, livrosCreationAttributes> implements livrosAttributes {
@@ -27,14 +27,14 @@ export class livros extends Model<livrosAttributes, livrosCreationAttributes> im
   titulo!: string;
   subtitulo?: string;
   autor!: string;
-  isbn?: string;
+  tipo_obra!: 'unico' | 'trilogia' | 'serie' | 'colecao';
+    nome_serie?: string;
   ano_publicacao?: number;
   num_paginas!: number;
   editora?: string;
   genero?: string;
   capa?: string;
-  created_at!: Date;
-  updated_at!: Date;
+
 
   // livros hasMany leituras via id_livro
   leituras!: leituras[];
@@ -51,93 +51,105 @@ export class livros extends Model<livrosAttributes, livrosCreationAttributes> im
 
   static initModel(sequelize: Sequelize.Sequelize): typeof livros {
     return livros.init({
-    id_livro: {
-      autoIncrement: true,
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    titulo: {
-      type: DataTypes.STRING(500),
-      allowNull: false
-    },
-    subtitulo: {
-      type: DataTypes.STRING(500),
-      allowNull: true
-    },
-    autor: {
-      type: DataTypes.STRING(300),
-      allowNull: false
-    },
-    isbn: {
-      type: DataTypes.STRING(20),
-      allowNull: true
-    },
-    ano_publicacao: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    num_paginas: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0
-    },
-    editora: {
-      type: DataTypes.STRING(200),
-      allowNull: true
-    },
-    genero: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    capa: {
-      type: DataTypes.STRING(500),
-      allowNull: true
-    }
-  }, {
-    sequelize,
-    tableName: 'livros',
-    timestamps: true,
-    indexes: [
-      {
-        name: "PRIMARY",
-        unique: true,
-        using: "BTREE",
-        fields: [
-          { name: "id_livro" },
-        ]
+      id_livro: {
+        autoIncrement: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true
       },
-      {
-        name: "unique_livro",
-        unique: true,
-        using: "BTREE",
-        fields: [
-          { name: "titulo", length: 200 },
-          { name: "autor", length: 100 },
-        ]
+      titulo: {
+        type: DataTypes.STRING(500),
+        allowNull: false
       },
-      {
-        name: "idx_titulo",
-        using: "BTREE",
-        fields: [
-          { name: "titulo", length: 255 },
-        ]
+      subtitulo: {
+        type: DataTypes.STRING(500),
+        allowNull: true
       },
-      {
-        name: "idx_autor",
-        using: "BTREE",
-        fields: [
-          { name: "autor", length: 100 },
-        ]
+      autor: {
+        type: DataTypes.STRING(300),
+        allowNull: false
       },
-      {
-        name: "idx_genero",
-        using: "BTREE",
-        fields: [
-          { name: "genero" },
-        ]
+      tipo_obra: {
+        type: DataTypes.ENUM('unico', 'trilogia', 'serie', 'colecao'),
+        allowNull: false,
+        defaultValue: 'unico',
+        validate: {
+          isIn: [['unico', 'trilogia', 'serie', 'colecao']]
+        }
       },
-    ]
-  });
+      nome_serie: {
+        type: DataTypes.STRING(200),
+        allowNull: true
+      },
+      ano_publicacao: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+      num_paginas: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+      },
+      editora: {
+        type: DataTypes.STRING(200),
+        allowNull: true
+      },
+      genero: {
+        type: DataTypes.STRING(100),
+        allowNull: true
+      },
+      capa: {
+        type: DataTypes.STRING(500),
+        allowNull: true
+      }
+    },
+
+
+      {
+        sequelize,
+        tableName: 'livros',
+        timestamps: false,
+
+        indexes: [
+          {
+            name: "PRIMARY",
+            unique: true,
+            using: "BTREE",
+            fields: [
+              { name: "id_livro" },
+            ]
+          },
+          {
+            name: "unique_livro",
+            unique: true,
+            using: "BTREE",
+            fields: [
+              { name: "titulo", length: 200 },
+              { name: "autor", length: 100 },
+            ]
+          },
+          {
+            name: "idx_titulo",
+            using: "BTREE",
+            fields: [
+              { name: "titulo", length: 255 },
+            ]
+          },
+          {
+            name: "idx_autor",
+            using: "BTREE",
+            fields: [
+              { name: "autor", length: 100 },
+            ]
+          },
+          {
+            name: "idx_genero",
+            using: "BTREE",
+            fields: [
+              { name: "genero" },
+            ]
+          },
+        ]
+      });
   }
 }

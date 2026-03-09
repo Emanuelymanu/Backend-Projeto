@@ -1,5 +1,8 @@
 import app from "./app";
 import { sequelize } from "./config/connection";
+import { initModels } from "./models-auto/init-models";
+
+initModels(sequelize);
 
 
 
