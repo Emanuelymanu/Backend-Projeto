@@ -1,7 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import { sequelize } from './models';
+import path from 'path';
+import { sequelize } from './models-auto';
+import './models-auto/livros';
 import authRoutes from './routes/authRoutes';
+import livrosRoutes from './routes/livrosRoutes';
+import { Sequelize } from 'sequelize';
 //import das routes aqui
 
 
@@ -18,7 +22,8 @@ app.use(cors({
 
 app.use(express.json());
 app.use('/api/auth', authRoutes);
-
+app.use('/upload/', express.static(path.join(__dirname, '../uploads')));
+app.use('/api/livros', livrosRoutes);
 
 
 //app.use('/api', nomedasrotas);
