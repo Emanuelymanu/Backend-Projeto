@@ -7,7 +7,7 @@ import { upload } from '../config/multer';
 const router = Router();
 const cadastrarLivrosController = new CadastrarLivrosController();
 
-router.post('/cadastrar', authMiddleware, upload.single('capa'), (req, res)=> cadastrarLivrosController.cadastrarLivro(req, res));
+router.post('/cadastrar', authMiddleware, upload.single('capas'), (req, res)=> cadastrarLivrosController.cadastrarLivro(req, res));
 
 
 export default router;

@@ -3,11 +3,12 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Garantir que o diretório existe
-const uploadDir = path.join(__dirname, '../../uploads/capas');
+
+const uploadDir = path.resolve(__dirname, '..', 'upload', 'capas');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
+
 
 // Configuração do storage
 const storage = multer.diskStorage({

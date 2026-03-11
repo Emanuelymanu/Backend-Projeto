@@ -28,20 +28,20 @@ export class CadastrarLivrosController {
                 if (file) {
                     fs.unlinkSync(file.path);
                 }
-                return res.status(400).json({ message: 'Campos obrigatórios ausentes: titulo, autor, tipo_obra e num_paginas' });
+                return res.status(400).json({ message: 'Campos obrigatórios ausentes: titulo, autor, tipo de obra e numero de paginas' });
             }
 
             const tipoObraValido = ['unico', 'trilogia', 'serie', 'colecao'];
             if (tipo_obra && !tipoObraValido.includes(tipo_obra)) {
                 if (file) fs.unlinkSync(file.path);
-                return res.status(400).json({ message: 'Valor inválido para tipo_obra. Valores permitidos: unico, trilogia, serie, colecao' });
+                return res.status(400).json({ message: 'Valor inválido para tipo de obra. Valores permitidos: unico, trilogia, serie, colecao' });
 
             }
 
             if (tipo_obra && tipo_obra !== 'unico') {
                 if (!nome_serie) {
                     if (file) fs.unlinkSync(file.path);
-                    return res.status(400).json({ message: 'nome de serie é obrigatório para obras do tipo trilogia, serie ou colecao' });
+                    return res.status(400).json({ message: 'nome de serie é obrigatório para obras do tipo trilogia, série ou coleção' });
                 }
             }
 
@@ -75,7 +75,7 @@ export class CadastrarLivrosController {
 
             let capaUrl = null;
             if (file) {
-                capaUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+                capaUrl = `${req.protocol}://${req.get('host')}/upload/${file.filename}`;
             }
 
             const novoLivro = await livros.create({
