@@ -54,7 +54,7 @@ export class LeiturasController {
             status: status || 'quero_ler',
             pagina_atual: pagina_atual || 0,
             vezes_lido: status === 'lido' ? 1 : 0,
-            data_inicio: status === 'lendo' ? new Date() : null
+            data_inicio : new Date().toISOString().split('T')[0]
          });
 
          const leituraCompleta = await leituras.findByPk(leitura.id_leitura, {
