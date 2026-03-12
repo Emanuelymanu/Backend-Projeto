@@ -17,13 +17,12 @@ export interface leiturasAttributes {
   resenha?: string;
   pagina_atual?: number;
   vezes_lido?: number;
-  created_at: Date;
-  updated_at: Date;
+  
 }
 
 export type leiturasPk = "id_leitura";
 export type leiturasId = leituras[leiturasPk];
-export type leiturasOptionalAttributes = "id_leitura" | "status" | "data_inicio" | "data_conclusao" | "avaliacao" | "resenha" | "pagina_atual" | "vezes_lido" | "created_at" | "updated_at";
+export type leiturasOptionalAttributes = "id_leitura" | "status" | "data_inicio" | "data_conclusao" | "avaliacao" | "resenha" | "pagina_atual" | "vezes_lido" ;
 export type leiturasCreationAttributes = Optional<leiturasAttributes, leiturasOptionalAttributes>;
 
 export class leituras extends Model<leiturasAttributes, leiturasCreationAttributes> implements leiturasAttributes {
@@ -37,8 +36,7 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
   resenha?: string;
   pagina_atual?: number;
   vezes_lido?: number;
-  created_at!: Date;
-  updated_at!: Date;
+
 
   // leituras hasMany anotacoes via id_leitura
   anotacos!: anotacoes[];
@@ -145,7 +143,7 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
   }, {
     sequelize,
     tableName: 'leituras',
-    timestamps: true,
+    timestamps: false,
     indexes: [
       {
         name: "PRIMARY",

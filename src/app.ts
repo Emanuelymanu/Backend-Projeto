@@ -24,6 +24,9 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/upload/capas', express.static(path.join(__dirname, '../upload/capas'))); // Rota para servir imagens de capas
 app.use('/api/livros', livrosRoutes);
+app.use('/api/livros/editar/:id', livrosRoutes);
+app.use('/api/livros/deletar/:id', livrosRoutes);
+
 
 
 //app.use('/api', nomedasrotas);
