@@ -54,7 +54,7 @@ export class LeiturasController {
             status: status || 'quero_ler',
             pagina_atual: pagina_atual || 0,
             vezes_lido: status === 'lido' ? 1 : 0,
-            data_inicio : new Date().toISOString().split('T')[0]
+            data_inicio: new Date().toISOString().split('T')[0]
          });
 
          const leituraCompleta = await leituras.findByPk(leitura.id_leitura, {
@@ -116,6 +116,42 @@ export class LeiturasController {
          console.error('Erro ao listar leituras:', error);
          return res.status(500).json({
             erro: 'Erro interno ao listar leituras'
+         })
+      }
+   }
+
+   async deletarLeitura(req: Request, res: Response): Promise<Response> {
+      try {
+         const usuarioId = (req as any).usuario.id;
+         const id = Number(req.params.id);
+
+         if (isNaN(id)) {
+            return res.status(400).json({
+               erro: 'Id inválido'
+            })
+         }
+
+         const leitura = await leituras.findOne({
+            where: {
+               id_leitura: id,
+               id_usuario: usuarioId
+            }
+         })
+
+         if(!leitura){
+            return res.status(404).json({
+               erro: 'Leitura não encontrada'
+            })
+         }
+
+         await leitura.destroy();
+         return res.json({
+            mensagem: 'Leitura deletada com sucesso'
+         })
+      }catch(error){
+         console.error('Erro ao deletar leitura:', error);
+         return res.status(500).json({
+            erro: 'Erro interno ao deletar leitura'
          })
       }
    }
