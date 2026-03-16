@@ -150,7 +150,7 @@ export class EditarLivrosController {
             });
 
         } catch (error) {
-            console.error('❌ Erro ao deletar livro:', error);
+            console.error('Erro ao deletar livro:', error);
             return res.status(500).json({
                 message: 'Erro interno ao deletar livro'
             });

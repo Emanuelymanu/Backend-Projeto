@@ -71,7 +71,12 @@ export class LoginController {
 
     async perfil(req: Request, res: Response): Promise<Response> {
         try {
-            const usuarioId = (req as any).usuario.id;
+            if (!req.usuario) {
+                return res.status(404).json({
+                    erro: 'Usuário não informado para login!'
+                });
+            }
+            const usuarioId = req.usuario.id;
 
             const usuario = await usuarios.findByPk(usuarioId, {
                 attributes: { exclude: ['senha'] }

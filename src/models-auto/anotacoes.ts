@@ -8,12 +8,12 @@ export interface anotacoesAttributes {
   pagina?: number;
   titulo?: string;
   conteudo: string;
-  created_at: Date;
+ 
 }
 
 export type anotacoesPk = "id_anotacao";
 export type anotacoesId = anotacoes[anotacoesPk];
-export type anotacoesOptionalAttributes = "id_anotacao" | "pagina" | "titulo" | "created_at";
+export type anotacoesOptionalAttributes = "id_anotacao" | "pagina" | "titulo" ;
 export type anotacoesCreationAttributes = Optional<anotacoesAttributes, anotacoesOptionalAttributes>;
 
 export class anotacoes extends Model<anotacoesAttributes, anotacoesCreationAttributes> implements anotacoesAttributes {
