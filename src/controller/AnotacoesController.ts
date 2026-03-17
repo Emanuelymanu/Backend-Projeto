@@ -6,7 +6,7 @@ import { Op } from 'sequelize';
 export class AnotacoesController{
     async criarAnotacao(req: Request, res: Response): Promise<Response>{
         try{
-            const usuarioId = (req as any).usuario?.id;
+            const usuarioId = req.usuario.id;
             if(!usuarioId){
                 return res.status(401).json({
                     erro: 'Usuário não autenticado'

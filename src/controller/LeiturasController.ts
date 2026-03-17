@@ -122,7 +122,7 @@ export class LeiturasController {
 
    async deletarLeitura(req: Request, res: Response): Promise<Response> {
       try {
-         const usuarioId = (req as any).usuario.id;
+         const usuarioId = req.usuario.id;
          const id = Number(req.params.id);
 
          if (isNaN(id)) {
