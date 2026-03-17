@@ -41,7 +41,7 @@ export class AtualizarAnotacao {
             if (titulo !== undefined) dadosAtualizados.titulo = titulo;
             if (conteudo !== undefined) dadosAtualizados.conteudo = conteudo;
 
-            await anotacao.update;
+            await anotacao.update(dadosAtualizados);
 
             return res.json({
                 mensagem: 'Anotação atualizada com sucesso',

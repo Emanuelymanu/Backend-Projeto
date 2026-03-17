@@ -8,6 +8,7 @@ export interface anotacoesAttributes {
   pagina?: number;
   titulo?: string;
   conteudo: string;
+
  
 }
 
@@ -61,7 +62,8 @@ export class anotacoes extends Model<anotacoesAttributes, anotacoesCreationAttri
   }, {
     sequelize,
     tableName: 'anotacoes',
-    timestamps: true,
+    timestamps: false,
+    
     indexes: [
       {
         name: "PRIMARY",

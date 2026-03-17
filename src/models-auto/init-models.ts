@@ -1,12 +1,10 @@
 import type { Sequelize } from "sequelize";
 import { anotacoes as _anotacoes } from "./anotacoes";
 import type { anotacoesAttributes, anotacoesCreationAttributes } from "./anotacoes";
-import { autor as _autor } from "./autor";
-import type { autorAttributes, autorCreationAttributes } from "./autor";
-import { editora as _editora } from "./editora";
-import type { editoraAttributes, editoraCreationAttributes } from "./editora";
-import { genero as _genero } from "./genero";
-import type { generoAttributes, generoCreationAttributes } from "./genero";
+
+
+
+
 import { leitura_tags as _leitura_tags } from "./leitura_tags";
 import type { leitura_tagsAttributes, leitura_tagsCreationAttributes } from "./leitura_tags";
 import { leituras as _leituras } from "./leituras";
@@ -20,9 +18,7 @@ import type { usuarios, usuariosAttributes, usuariosCreationAttributes } from ".
 
 export {
   _anotacoes as anotacoes,
-  _autor as autor,
-  _editora as editora,
-  _genero as genero,
+  
   _leitura_tags as leitura_tags,
   _leituras as leituras,
   _livros as livros,
@@ -33,12 +29,7 @@ export {
 export type {
   anotacoesAttributes,
   anotacoesCreationAttributes,
-  autorAttributes,
-  autorCreationAttributes,
-  editoraAttributes,
-  editoraCreationAttributes,
-  generoAttributes,
-  generoCreationAttributes,
+  
   leitura_tagsAttributes,
   leitura_tagsCreationAttributes,
   leiturasAttributes,
@@ -53,9 +44,7 @@ export type {
 
 export function initModels(sequelize: Sequelize) {
   const anotacoes = _anotacoes.initModel(sequelize);
-  const autor = _autor.initModel(sequelize);
-  const editora = _editora.initModel(sequelize);
-  const genero = _genero.initModel(sequelize);
+
   const leitura_tags = _leitura_tags.initModel(sequelize);
   const leituras = _leituras.initModel(sequelize);
   const livros = _livros.initModel(sequelize);
@@ -79,9 +68,7 @@ export function initModels(sequelize: Sequelize) {
 
   return {
     anotacoes: anotacoes,
-    autor: autor,
-    editora: editora,
-    genero: genero,
+    
     leitura_tags: leitura_tags,
     leituras: leituras,
     livros: livros,
