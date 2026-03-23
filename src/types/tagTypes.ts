@@ -12,7 +12,7 @@ export interface CriarTagDTO{
 
 export interface AtualizarTagDTO{
     nome?: string;
-    cor?: string
+    cor?: string;
 }
 
 export interface TagResponse {

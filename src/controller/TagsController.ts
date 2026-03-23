@@ -4,7 +4,7 @@ import { leitura_tags } from "../models-auto/leitura_tags";
 import { leituras } from "../models-auto/leituras";
 import { Op } from "sequelize";
 
-import { Tag, CriarTagDTO, AtualizarTagDTO, TagResponse, ListarTagQuery } from "../types/tagTypes";
+import { Tag, CriarTagDTO, TagResponse, ListarTagQuery } from "../types/tagTypes";
 
 export class TagsController {
     async criarTag(req: Request<{}, {}, CriarTagDTO>, res: Response): Promise<Response> {
@@ -109,13 +109,67 @@ export class TagsController {
 
             await tag.destroy();
 
-            return res.json({ 
-                mensagem: 'Tag deletada com sucesso' 
+            return res.json({
+                mensagem: 'Tag deletada com sucesso'
             });
-        }catch(error){
+        } catch (error) {
             console.error('Erro ao deletar tag: ', error);
             return res.status(500).json({
                 erro: 'Erro interno ao deletar tag'
+            })
+        }
+    }
+
+
+    async listarTags(req: Request<{}, {}, {}, ListarTagQuery>, res: Response): Promise<Response> {
+        try {
+            if (!req.usuario) {
+                return res.status(401).json({
+                    erro: "Usuário não autenticado"
+                })
+            }
+
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 10;
+            const buscar = req.query.buscar;
+
+           
+            const offset = (page - 1) * limit
+
+            const where: any = { id_usuario: req.usuario.id };
+            if (buscar) {
+                where.nome = { [Op.like]: `%${buscar}%` }
+            }
+
+            const { count, rows } = await tags.findAndCountAll({
+                where,
+                limit: Number(limit),
+                offset,
+                order: [["nome", "ASC"]],
+                include: [{
+                    model: leitura_tags,
+                    as: "leitura_tags",
+                    required: false
+                }]
+            });
+
+            const tagsResponse: TagResponse[] = rows.map(tag => ({
+                id_tag: tag.id_tag,
+                nome: tag.nome,
+                cor: tag.cor || "#808080",
+                total_leituras: tag.leitura_tags?.length || 0
+            }));
+
+            return res.json({
+                total: count,
+                pagina: Number(page),
+                totalPaginas: Math.ceil(count / Number(limit)),
+                tags: tagsResponse
+            })
+        } catch (error) {
+            console.error("Erro ao listar tags:", error);
+            return res.status(500).json({
+                erro: "Erro interno ao listar tags"
             })
         }
     }
