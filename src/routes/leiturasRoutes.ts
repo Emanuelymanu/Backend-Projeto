@@ -11,7 +11,8 @@ router.use(authMiddleware);
 
 router.post('/iniciar',authMiddleware, (req,res) => leiturasController.iniciarLeitura(req,res));
 router.get('/listar',authMiddleware, (req,res)=> leiturasController.listarLeituras(req,res));
-router.delete('/:id',authMiddleware, (req,res)=> leiturasController.deletarLeitura(req,res));
+router.delete('/:id',authMiddleware, (req,res)=> leiturasController.deletarLeitura(req, res));
+router.post('/:id/avaliar', (req,res)=> atualizarLeitura.avaliarLeitura(req,res));
 
 router.put('/:id/progresso',authMiddleware, (req,res)=> atualizarLeitura.atualizarProgresso(req,res));
 

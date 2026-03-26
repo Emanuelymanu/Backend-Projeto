@@ -10,7 +10,7 @@ export interface leiturasAttributes {
   id_leitura: number;
   id_usuario: number;
   id_livro: number;
-  status: 'quero_ler' | 'lendo' | 'lido' | 'abandonado' | 'relendo';
+  status: 'nao_lido'|'quero_ler' | 'lendo' | 'lido' | 'abandonado' | 'relendo';
   data_inicio?: string;
   data_conclusao?: string;
   avaliacao?: number;
@@ -29,7 +29,7 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
   id_leitura!: number;
   id_usuario!: number;
   id_livro!: number;
-  status!: 'quero_ler' | 'lendo' | 'lido' | 'abandonado' | 'relendo';
+  status!: 'nao_lido'|'quero_ler' | 'lendo' | 'lido' | 'abandonado' | 'relendo';
   data_inicio?: string;
   data_conclusao?: string;
   avaliacao?: number;
@@ -110,7 +110,7 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
       }
     },
     status: {
-      type: DataTypes.ENUM('quero_ler','lendo','lido','abandonado','relendo'),
+      type: DataTypes.ENUM('nao_lido','quero_ler','lendo','lido','abandonado','relendo'),
       allowNull: false,
       defaultValue: "quero_ler"
     },

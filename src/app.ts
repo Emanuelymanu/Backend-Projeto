@@ -8,6 +8,7 @@ import livrosRoutes from './routes/livrosRoutes';
 import leiturasRoutes from './routes/leiturasRoutes';
 import anotacoesRoutes from './routes/anotacoesRoutes';
 import tagsRoutes from './routes/tagsRoutes';
+import perfilRoutes from './routes/perfilRoutes';
 import { Sequelize } from 'sequelize';
 
 //import das routes aqui
@@ -33,6 +34,7 @@ app.use('/api/livros/deletar/:id', livrosRoutes);
 app.use('/api/leituras', leiturasRoutes);
 app.use('/api/anotacoes', anotacoesRoutes);
 app.use('/api/tags', tagsRoutes);
+app.use('/api/perfil', perfilRoutes);
 
 
 

@@ -1,0 +1,75 @@
+
+
+export interface Livro {
+    id_livro: number;
+    titulo: string;
+    subtitulo?: string | null;
+    autor: string;
+    tipo_obra: 'unico' | 'trilogia' | 'serie' | 'colecao';
+    nome_serie?: string | null;
+    volume?: number | null;
+    total_volumes?: number | null;
+    ano_publicacao?: number | null;
+    num_paginas: number;
+    editora?: string | null;
+    genero?: string | null;
+    capa?: string | null;
+    created_at?: Date;
+    updated_at?: Date;
+}
+
+export interface CriarLivroDTO {
+    titulo: string;
+    subtitulo?: string;
+    autor: string;
+    tipo_obra: 'unico' | 'trilogia' | 'serie' | 'colecao';
+    nome_serie?: string;
+    volume?: number;
+    total_volumes?: number;
+    ano_publicacao?: number;
+    num_paginas: number;
+    editora?: string;
+    genero?: string;
+    capa?: string;
+}
+
+export interface AtualizarLivroDTO {
+    titulo?: string;
+    subtitulo?: string;
+    autor?: string;
+    tipo_obra?: 'unico' | 'trilogia' | 'serie' | 'colecao';
+    nome_serie?: string;
+    volume?: number;
+    total_volumes?: number;
+    ano_publicacao?: number;
+    num_paginas?: number;
+    editora?: string;
+    genero?: string;
+    capa?: string;
+}
+
+export interface LivroResponse {
+    id_livro: number;
+    titulo: string;
+    subtitulo?: string | null;
+    autor: string;
+    tipo_obra: string;
+    nome_serie?: string | null;
+    volume?: number | null;
+    total_volumes?: number | null;
+    ano_publicacao?: number | null;
+    num_paginas: number;
+    editora?: string | null;
+    genero?: string | null;
+    capa?: string | null;
+}
+
+export interface ListarLivrosQuery {
+    page?: number;
+    limit?: number;
+    genero?: string;
+    autor?: string;
+    titulo?: string;
+    tipo_obra?: string;
+    nome_serie?: string;
+}

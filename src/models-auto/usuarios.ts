@@ -62,24 +62,13 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
       nome: {
         type: DataTypes.STRING(200),
         allowNull: false,
-        validate: {
-          notEmpty: {
-            msg: 'O nome é obrigatório'
-          }
-        }
+        
       },
       email: {
         type: DataTypes.STRING(200),
         allowNull: false,
         unique: true,
-        validate: {
-          isEmail: {
-            msg: 'O email deve ser válido'
-          },
-          notEmpty: {
-            msg: 'O email é obrigatório'
-          }
-        }
+        
       },
       cpf: {
         type: DataTypes.STRING(11),
@@ -102,20 +91,20 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
       sequelize,
       tableName: 'usuarios',
       timestamps: false,
-      hooks: {
-        beforeCreate: async (usuario: usuarios) => {
-          if (usuario.senha) {
-            const salt = await bcrypt.genSalt(10);
-            usuario.senha = await bcrypt.hash(usuario.senha, salt);
-          }
-        },
-        beforeUpdate: async (usuario: usuarios) => {
-          if (usuario.senha) {
-            const salt = await bcrypt.genSalt(10);
-            usuario.senha = await bcrypt.hash(usuario.senha, salt);
-          }
-        }
-      },
+      // hooks: {
+      //   beforeCreate: async (usuario: usuarios) => {
+      //     if (usuario.senha) {
+      //       const salt = await bcrypt.genSalt(10);
+      //       usuario.senha = await bcrypt.hash(usuario.senha, salt);
+      //     }
+      //   },
+      //   beforeUpdate: async (usuario: usuarios) => {
+      //     if (usuario.senha) {
+      //       const salt = await bcrypt.genSalt(10);
+      //       usuario.senha = await bcrypt.hash(usuario.senha, salt);
+      //     }
+      //   }
+      // },
       indexes: [
         {
           name: "PRIMARY",

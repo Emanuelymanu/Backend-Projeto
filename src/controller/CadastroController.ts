@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { usuarios } from '../models-auto/usuarios';
-import jwt from 'jsonwebtoken';
+import JWT from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-
+import { cpf as cpfValidator} from 'cpf-cnpj-validator';
 
 const JWT_SECRET = process.env.JWT_SECRET_KEY || 'sua_chave';
 
@@ -18,6 +18,14 @@ export class CadastroController {
                     erro: 'Todos os campos são obrigatórios'
                 })
             }
+
+            const cpfLimpo = cpf.replace(/\D/g, '');
+            const cpfValido = cpfValidator.isValid(cpfLimpo);
+             if(!cpfValido){
+                return res.status(400).json({
+                    erro: "CPF inválido"
+                })
+             }
 
             const senhaForte = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
             if (!senhaForte.test(senha)) {
@@ -40,10 +48,13 @@ export class CadastroController {
                 })
             }
 
+            const salt = await bcrypt.genSalt(10);
+            const senhaCriptografada  = await bcrypt.hash(senha, salt)
+
             const usuario = await usuarios.create({
                 nome,
                 email,
-                senha,
+                senha: senhaCriptografada,
                 cpf: cpf.replace(/\D/g, '')
             });
 
@@ -57,7 +68,7 @@ export class CadastroController {
 
         } catch (error: any) {
             if (error.name === 'SequelizeValidationError') {
-                ;
+                
                 return res.status(400).json({ erro: error.errors.map((e: any) => e.message) });
             }
             console.error('Erro no cadastro:', error);

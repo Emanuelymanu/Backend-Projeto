@@ -51,13 +51,13 @@ export class LoginController {
                     expiresIn: '5h'
                 });
 
-            const usuarioSmSenha = usuario.toJSON();
-            delete usuarioSmSenha.senha;
+            const usuarioSemSenha = usuario.toJSON();
+            delete usuarioSemSenha.senha;
 
             res.status(200).json({
                 message: 'Login bem-sucedido',
                 token,
-                usuario: usuarioSmSenha
+                usuario: usuarioSemSenha
             });
 
         } catch (error) {
@@ -69,26 +69,6 @@ export class LoginController {
     }
 
 
-    async perfil(req: Request, res: Response): Promise<Response> {
-        try {
-            
-            const usuarioId = req.usuario.id;
-
-            const usuario = await usuarios.findByPk(usuarioId, {
-                attributes: { exclude: ['senha'] }
-            });
-
-            if (!usuario) {
-                return res.status(404).json({
-                    erro: 'Usuário não encontrado'
-                });
-            }
-            return res.json(usuario);
-        } catch (error) {
-            return res.status(500).json({
-                erro: 'Erro interno do servidor'
-            })
-        }
-    }
+   
 
 }

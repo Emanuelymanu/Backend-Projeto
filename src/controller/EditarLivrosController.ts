@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { livros } from '../models-auto/livros';
 import fs from 'fs';
 import path from 'path';
+import { AtualizarLivroDTO, LivroResponse } from '../types/livroTypes';
 
 export class EditarLivrosController {
 
@@ -33,7 +34,7 @@ export class EditarLivrosController {
                 });
             }
 
-            const dadosAtualizados = req.body;
+            const dadosAtualizados: AtualizarLivroDTO ={ ...req.body};
 
 
             if (file) {
@@ -67,9 +68,23 @@ export class EditarLivrosController {
 
             await livro.update(dadosAtualizados);
 
+            const resposta: LivroResponse = {
+                id_livro: livro.id_livro,
+                titulo: livro.titulo,
+                subtitulo: livro.subtitulo,
+                autor: livro.autor,
+                tipo_obra: livro.tipo_obra,
+                nome_serie: livro.nome_serie,
+                ano_publicacao: livro.ano_publicacao,
+                num_paginas: livro.num_paginas,
+                editora: livro.editora,
+                genero: livro.genero,
+                capa: livro.capa
+            };
+
             return res.json({
                 mensagem: 'Livro atualizado com sucesso',
-                livro
+                resposta
             });
 
         } catch (error) {

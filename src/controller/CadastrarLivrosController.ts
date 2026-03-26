@@ -3,6 +3,7 @@ import { livros } from '../models-auto/livros';
 import { Op } from 'sequelize';
 import fs from 'fs';
 import path from 'path';
+import { CriarLivroDTO, LivroResponse } from '../types/livroTypes';
 
 export class CadastrarLivrosController {
     async cadastrarLivro(req: Request, res: Response) {
@@ -31,7 +32,7 @@ export class CadastrarLivrosController {
                 return res.status(400).json({ message: 'Campos obrigatórios ausentes: titulo, autor, tipo de obra e numero de paginas' });
             }
 
-            const tipoObraValido = ['unico', 'trilogia', 'serie', 'colecao'];
+            const tipoObraValido: CriarLivroDTO['tipo_obra'][] = ['unico', 'trilogia', 'serie', 'colecao'];
             if (tipo_obra && !tipoObraValido.includes(tipo_obra)) {
                 if (file) fs.unlinkSync(file.path);
                 return res.status(400).json({ message: 'Valor inválido para tipo de obra. Valores permitidos: unico, trilogia, serie, colecao' });
@@ -90,14 +91,29 @@ export class CadastrarLivrosController {
                 genero,
                 capa: capaUrl
             });
+
+            const resposta: LivroResponse = {
+                id_livro: novoLivro.id_livro,
+                titulo: novoLivro.titulo,
+                subtitulo: novoLivro.subtitulo,
+                autor: novoLivro.autor,
+                tipo_obra: novoLivro.tipo_obra,
+                nome_serie: novoLivro.nome_serie,
+                ano_publicacao: novoLivro.ano_publicacao,
+                num_paginas: novoLivro.num_paginas,
+                editora: novoLivro.editora,
+                genero: novoLivro.genero,
+                capa: novoLivro.capa
+            };
+
             console.log('Livro criado com ID:', novoLivro.id_livro);
-            return res.status(201).json({ message: 'Livro cadastrado com sucesso', livro: novoLivro });
+            return res.status(201).json({ message: 'Livro cadastrado com sucesso', resposta });
         } catch (error: any) {
             console.error('Erro ao cadastrar livro:', error);
         }
     }
 
 
-   
+
 }
 
