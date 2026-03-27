@@ -67,9 +67,13 @@ export interface LivroResponse {
 export interface ListarLivrosQuery {
     page?: number;
     limit?: number;
+    busca?: string;          
     genero?: string;
-    autor?: string;
-    titulo?: string;
+    editora?: string;
     tipo_obra?: string;
     nome_serie?: string;
+    avaliacao_min?: number;    
+    avaliacao_max?: number;    
+    ordenar_por?: 'titulo' | 'autor' | 'ano_publicacao' | 'num_paginas' | 'created_at';
+    ordem?: 'ASC' | 'DESC';
 }
