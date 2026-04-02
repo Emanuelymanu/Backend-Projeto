@@ -34,7 +34,7 @@ export class EditarLivrosController {
                 });
             }
 
-            const dadosAtualizados: AtualizarLivroDTO ={ ...req.body};
+            const dadosAtualizados: AtualizarLivroDTO = { ...req.body };
 
 
             if (file) {
@@ -84,7 +84,7 @@ export class EditarLivrosController {
 
             return res.json({
                 mensagem: 'Livro atualizado com sucesso',
-                resposta
+                livro: resposta
             });
 
         } catch (error) {

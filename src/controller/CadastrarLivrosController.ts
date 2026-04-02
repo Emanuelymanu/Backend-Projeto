@@ -107,11 +107,11 @@ export class CadastrarLivrosController {
             };
 
             console.log('Livro criado com ID:', novoLivro.id_livro);
-            return res.status(201).json({ message: 'Livro cadastrado com sucesso', resposta });
+            return res.status(201).json({ mensagem: 'Livro cadastrado com sucesso', livro: resposta });
         } catch (error: any) {
             console.error('Erro ao cadastrar livro:', error);
         }
     }
 
-    
+
 }
