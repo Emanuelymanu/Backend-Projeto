@@ -136,7 +136,7 @@ export class LeiturasController {
             where,
             limit: limite,
             offset,
-            order: ['DESC'],
+            order: [['data_inicio', 'DESC']],
             include: [{
                model: livros,
                as: 'id_livro_livro'
