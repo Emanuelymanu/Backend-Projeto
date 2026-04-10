@@ -11,6 +11,7 @@ export class LeiturasController {
             return res.status(401).json({ erro: 'Usuário não autenticado' });
          }
          const { id_livro, status, pagina_atual } = req.body;
+         const paginaAtualNum = pagina_atual !== undefined ? Number(pagina_atual) : undefined;
          const usuarioId = req.usuario.id;
          if (!id_livro) {
             return res.status(400).json({
@@ -45,9 +46,10 @@ export class LeiturasController {
             });
          }
 
-         if (pagina_atual && (pagina_atual < 0 || pagina_atual > livro.num_paginas)) {
+         const numPaginas = Number(livro.num_paginas);
+         if (paginaAtualNum !== undefined && (paginaAtualNum < 0 || paginaAtualNum > numPaginas)) {
             return res.status(400).json({
-               erro: `Página atual deve estar entre 0 e ${livro.num_paginas}`
+               erro: `Página atual deve estar entre 0 e ${numPaginas}`
             })
          }
 
@@ -55,7 +57,7 @@ export class LeiturasController {
             id_usuario: usuarioId,
             id_livro,
             status: status || 'quero_ler',
-            pagina_atual: pagina_atual || 0,
+            pagina_atual: paginaAtualNum !== undefined ? paginaAtualNum : 0,
             vezes_lido: status === 'lido' ? 1 : 0,
             data_inicio: new Date().toISOString().split('T')[0]
          });

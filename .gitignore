@@ -52,3 +52,7 @@ src/seeders/
 
 # Ignore auto-generated models
 src/models-auto/
+
+package-lock.json
+yarn.lock   
+package.json

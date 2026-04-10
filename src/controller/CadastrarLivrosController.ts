@@ -86,7 +86,7 @@ export class CadastrarLivrosController {
                 tipo_obra: tipo_obra || 'unico',
                 nome_serie,
                 ano_publicacao: ano_publicacao ? parseInt(ano_publicacao) : null,
-                num_paginas: paginas,
+                num_paginas: Number(paginas),
                 editora,
                 genero,
                 capa: capaUrl

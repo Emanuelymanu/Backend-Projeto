@@ -44,9 +44,10 @@ export class AtualizarLeituraController {
             const livro = leitura.id_livro_livro;
 
             if (pagina_atual !== undefined) {
-                if (pagina_atual < 0 || pagina_atual > livro.num_paginas) {
+                const numPaginas = Number(livro.num_paginas);
+                if (pagina_atual < 0 || pagina_atual > numPaginas) {
                     return res.status(400).json({
-                        erro: `Página atual deve estar entre 0 e ${livro.num_paginas}`
+                        erro: `Página atual deve estar entre 0 e ${numPaginas}`
                     })
                 }
             }
