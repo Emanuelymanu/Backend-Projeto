@@ -47,7 +47,7 @@ export class EditarLivrosController {
                                 '..',
                                 '..',
                                 'upload',
-                                'capas',
+                                'capa',
                                 nomeArquivoAntigo
                             );
 
@@ -62,7 +62,7 @@ export class EditarLivrosController {
                 }
 
 
-                dadosAtualizados.capa = `${req.protocol}://${req.get('host')}/upload/capas/${file.filename}`;
+                dadosAtualizados.capa = `${req.protocol}://${req.get('host')}/upload/capa/${file.filename}`;
 
             }
 
@@ -141,7 +141,7 @@ export class EditarLivrosController {
                             '..',
                             '..',
                             'upload',
-                            'capas',
+                            'capa',
                             nomeArquivo
                         );
 

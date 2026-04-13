@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import { CadastrarLivrosController } from '../controller/CadastrarLivrosController';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { EditarLivrosController } from '../controller/EditarLivrosController';
@@ -13,10 +13,11 @@ const editarLivrosController = new EditarLivrosController();
 const listarLivros = new ListarLivrosController();
 const filtroLivros = new FiltroLivros();
 
-router.post('/cadastrar', authMiddleware, upload.single('capas'), (req, res)=> cadastrarLivrosController.cadastrarLivro(req, res));
-router.put('/:id', authMiddleware, upload.single('capas'), (req, res) => editarLivrosController.atualizarLivro(req, res));
+router.post('/cadastrar', authMiddleware, upload.single('capa'), (req, res) => cadastrarLivrosController.cadastrarLivro(req, res));
+router.put('/editar/:id', authMiddleware, upload.single('capa'), (req, res) => editarLivrosController.atualizarLivro(req, res));
 router.delete('/:id', authMiddleware, (req, res) => editarLivrosController.deletarLivro(req, res));
 
+router.get('/listar', (req, res) => listarLivros.listarLivros(req, res));
 router.get('/', (req, res) => listarLivros.listarLivros(req, res));
 router.get('/filtros/opcoes', (req, res) => filtroLivros.obterOpcoesFiltro(req, res));
 router.get('/genero/:genero', (req, res) => filtroLivros.buscarPorGenero(req, res));

@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 
 
-const uploadDir = path.resolve(__dirname, '..', 'upload', 'capas');
+const uploadDir = path.resolve(__dirname, '..', 'upload', 'capa');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }

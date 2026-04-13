@@ -19,7 +19,7 @@ export interface livrosAttributes {
 
 export type livrosPk = "id_livro";
 export type livrosId = livros[livrosPk];
-export type livrosOptionalAttributes = "id_livro" | "subtitulo" | "tipo_obra"| "nome_serie" | "ano_publicacao" | "num_paginas" | "editora" | "genero" | "capa";
+export type livrosOptionalAttributes = "id_livro" | "subtitulo" | "tipo_obra" | "nome_serie" | "ano_publicacao" | "num_paginas" | "editora" | "genero" | "capa";
 export type livrosCreationAttributes = Optional<livrosAttributes, livrosOptionalAttributes>;
 
 export class livros extends Model<livrosAttributes, livrosCreationAttributes> implements livrosAttributes {
@@ -28,7 +28,7 @@ export class livros extends Model<livrosAttributes, livrosCreationAttributes> im
   subtitulo?: string;
   autor!: string;
   tipo_obra!: 'unico' | 'trilogia' | 'serie' | 'colecao';
-    nome_serie?: string;
+  nome_serie?: string;
   ano_publicacao?: number;
   num_paginas!: number;
   editora?: string;

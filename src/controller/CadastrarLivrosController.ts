@@ -76,7 +76,7 @@ export class CadastrarLivrosController {
 
             let capaUrl = null;
             if (file) {
-                capaUrl = `${req.protocol}://${req.get('host')}/upload/${file.filename}`;
+                capaUrl = `${req.protocol}://${req.get('host')}/upload/capa/${file.filename}`;
             }
 
             const novoLivro = await livros.create({
