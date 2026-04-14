@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { livros } from '../models-auto/livros';
+import { leituras } from '../models-auto/leituras';
 import fs from 'fs';
 import path from 'path';
 import { AtualizarLivroDTO, LivroResponse } from '../types/livroTypes';
@@ -35,6 +36,32 @@ export class EditarLivrosController {
             }
 
             const dadosAtualizados: AtualizarLivroDTO = { ...req.body };
+
+            const { status, avaliacao } = req.body;
+            const usuario = req.usuario;
+            if (usuario && (status !== undefined || avaliacao !== undefined)) {
+
+                let leitura = await leituras.findOne({
+                    where: {
+                        id_usuario: usuario.id,
+                        id_livro: id
+                    }
+                });
+                if (!leitura) {
+                    await leituras.create({
+                        id_usuario: usuario.id,
+                        id_livro: id,
+                        status: status || 'lendo',
+                        avaliacao: avaliacao !== undefined ? avaliacao : null,
+                        data_inicio: new Date().toISOString().split('T')[0]
+                    });
+                } else {
+                   
+                    if (status !== undefined) leitura.status = status;
+                    if (avaliacao !== undefined) leitura.avaliacao = avaliacao;
+                    await leitura.save();
+                }
+            }
 
 
             if (file) {

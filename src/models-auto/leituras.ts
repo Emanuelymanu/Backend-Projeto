@@ -7,7 +7,7 @@ import type { tags, tagsId } from './tags';
 import type { usuarios, usuariosId } from './usuarios';
 
 export interface leiturasAttributes {
-  media: any;
+  
   id_leitura: number;
   id_usuario: number;
   id_livro: number;
@@ -89,10 +89,7 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
 
   static initModel(sequelize: Sequelize.Sequelize): typeof leituras {
     return leituras.init({
-      media: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
+      
       id_leitura: {
         autoIncrement: true,
         type: DataTypes.INTEGER,
