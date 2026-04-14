@@ -43,12 +43,19 @@ export class AtualizarLeituraController {
 
             const livro = leitura.id_livro_livro;
 
+
             if (pagina_atual !== undefined) {
                 const numPaginas = Number(livro.num_paginas);
                 if (pagina_atual < 0 || pagina_atual > numPaginas) {
                     return res.status(400).json({
                         erro: `Página atual deve estar entre 0 e ${numPaginas}`
                     })
+                }
+                // Se chegou na última página, marca como lido automaticamente
+                if (pagina_atual === numPaginas) {
+                    leitura.status = 'lido';
+                    leitura.data_conclusao = new Date().toISOString().split('T')[0];
+                    leitura.vezes_lido = (leitura.vezes_lido || 0) + 1;
                 }
             }
 

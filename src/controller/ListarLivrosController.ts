@@ -127,16 +127,16 @@ export class ListarLivrosController {
 
             const livrosResponse = await Promise.all(rows.map(async (livro) => {
 
-                const avaliacoes = await leituras.findAll({
+                const avaliacaoObj = await leituras.findOne({
                     where: {
                         id_livro: livro.id_livro,
                         avaliacao: { [Op.not]: null }
                     },
-                    attributes: [[Sequelize.fn('AVG', Sequelize.col('avaliacao')), 'media']]
+                    attributes: [[Sequelize.fn('AVG', Sequelize.col('avaliacao')), 'media']],
+                    raw: true
                 });
-
-                const mediaAvaliacao = avaliacoes[0]?.dataValues?.media
-                    ? Number(avaliacoes[0].dataValues.media).toFixed(1)
+                const mediaAvaliacao = avaliacaoObj?.media
+                    ? Number(avaliacaoObj.media).toFixed(1)
                     : null;
 
                 return {
@@ -179,6 +179,43 @@ export class ListarLivrosController {
             return res.status(500).json({
                 erro: 'Erro interno ao listar livros'
             });
+        }
+    }
+
+    async listarTopAvaliados(req: Request, res: Response): Promise<Response> {
+        try {
+            // Busca todos os livros
+            const livrosList = await livros.findAll({
+                attributes: [
+                    'id_livro', 'titulo', 'subtitulo', 'autor', 'tipo_obra', 'nome_serie', 'ano_publicacao', 'num_paginas', 'editora', 'genero', 'capa',
+                ]
+            });
+
+            // Para cada livro, calcular a média das avaliações
+            const livrosComMediaArray = await Promise.all(livrosList.map(async (livro) => {
+                const avaliacaoObj = await leituras.findOne({
+                    where: {
+                        id_livro: livro.id_livro,
+                        avaliacao: { [Op.not]: null }
+                    },
+                    attributes: [[Sequelize.fn('AVG', Sequelize.col('avaliacao')), 'media']],
+                    raw: true
+                });
+                return {
+                    ...livro.get(),
+                    avaliacao_media: avaliacaoObj?.media ? Number(avaliacaoObj.media).toFixed(1) : null
+                };
+            }));
+
+            // Ordenar por média de avaliação (desc) e pegar os 5 primeiros
+            const top5 = livrosComMediaArray
+                .sort((a, b) => (Number(b.avaliacao_media) || 0) - (Number(a.avaliacao_media) || 0))
+                .slice(0, 5);
+
+            return res.json({ livros: top5 });
+        } catch (error) {
+            console.error('Erro ao listar top avaliados:', error);
+            return res.status(500).json({ erro: 'Erro interno ao listar top avaliados' });
         }
     }
 

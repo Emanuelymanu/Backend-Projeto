@@ -9,6 +9,6 @@ const perfilController = new PerfilController();
 router.use(authMiddleware);
 
 router.get('/', (req, res) => perfilController.perfil(req, res));
-router.patch('/', (req, res) => perfilController.editarPerfil(req, res));
+router.put('/', (req, res) => perfilController.editarPerfil(req, res));
 
 export default router;

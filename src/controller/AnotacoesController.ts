@@ -1,40 +1,41 @@
+
 import { Request, Response } from 'express';
 import { anotacoes } from '../models-auto/anotacoes';
 import { leituras } from '../models-auto/leituras';
 import { Op } from 'sequelize';
 
-export class AnotacoesController{
-    async criarAnotacao(req: Request, res: Response): Promise<Response>{
-        try{
+export class AnotacoesController {
+    async criarAnotacao(req: Request, res: Response): Promise<Response> {
+        try {
             const usuarioId = req.usuario.id;
-            if(!usuarioId){
+            if (!usuarioId) {
                 return res.status(401).json({
                     erro: 'Usuário não autenticado'
                 })
             }
 
-            const {id_leitura, pagina, titulo, conteudo} = req.body;
+            const { id_leitura, pagina, titulo, conteudo } = req.body;
 
-            if(!id_leitura){
+            if (!id_leitura) {
                 return res.status(400).json({
                     erro: 'ID da leitura é obrigatório'
                 })
             }
 
-            if(!conteudo){
+            if (!conteudo) {
                 return res.status(400).json({
                     erro: 'Conteúdo da anotação é obrigatório'
                 })
             }
 
             const leitura = await leituras.findOne({
-                where:{
+                where: {
                     id_leitura,
                     id_usuario: usuarioId
                 }
             })
 
-            if(!leitura){
+            if (!leitura) {
                 return res.status(404).json({
                     erro: 'Leitura não encontrada'
                 })
@@ -47,8 +48,8 @@ export class AnotacoesController{
                 conteudo
             });
 
-            const anotacaoCompleta = await anotacoes.findByPk(anotacao.id_anotacao,{
-                include:[{
+            const anotacaoCompleta = await anotacoes.findByPk(anotacao.id_anotacao, {
+                include: [{
                     model: leituras,
                     as: 'id_leitura_leitura'
                 }]
@@ -58,7 +59,7 @@ export class AnotacoesController{
                 mensagem: 'Anotação criada com sucesso',
                 anotacao: anotacaoCompleta
             })
-        }catch(error){
+        } catch (error) {
             console.error('Erro ao criar anotação:', error);
             return res.status(500).json({
                 erro: 'Erro interno ao criar anotação'
@@ -66,27 +67,62 @@ export class AnotacoesController{
         }
     }
 
-    async deletarAnotacao(req: Request, res: Response): Promise<Response>{
-        try{
+    async buscarTodasPorLeitura(req: Request, res: Response): Promise<Response> {
+        try {
+            const usuarioId = req.usuario.id;
+            const id_leitura = Number(req.params.id_leitura);
+
+            if (isNaN(id_leitura)) {
+                return res.status(400).json({ erro: 'ID da leitura inválido' });
+            }
+
+            const leitura = await leituras.findOne({
+                where: {
+                    id_leitura,
+                    id_usuario: usuarioId
+                }
+            });
+
+            if (!leitura) {
+                return res.status(404).json({ erro: 'Leitura não encontrada' });
+            }
+
+            const anotacoesLista = await anotacoes.findAll({
+                where: { id_leitura },
+                order: [['pagina', 'ASC']]
+            });
+
+            return res.json({
+                total: anotacoesLista.length,
+                anotacoes: anotacoesLista
+            });
+        } catch (error) {
+            console.error('Erro ao buscar anotações por leitura:', error);
+            return res.status(500).json({ erro: 'Erro interno ao buscar anotações' });
+        }
+    }
+
+    async deletarAnotacao(req: Request, res: Response): Promise<Response> {
+        try {
             const usuarioId = req.usuario.id;
             const id = Number(req.params.id);
 
-            if(isNaN(id)){
+            if (isNaN(id)) {
                 return res.status(400).json({
                     erro: 'ID inválido'
                 })
             }
 
             const anotacao = await anotacoes.findOne({
-                where:{id_anotacao: id},
+                where: { id_anotacao: id },
                 include: [{
                     model: leituras,
                     as: 'id_leitura_leitura',
-                    where:{id_usuario: usuarioId}
+                    where: { id_usuario: usuarioId }
                 }]
             });
 
-            if(!anotacao){
+            if (!anotacao) {
                 return res.status(404).json({
                     erro: 'Anotação não encontrada'
                 })
@@ -97,7 +133,7 @@ export class AnotacoesController{
             return res.json({
                 mensagem: 'Anotação deletada com sucesso'
             })
-        }catch(error){
+        } catch (error) {
             console.error('Erro ao deletar anotação', error);
             return res.status(500).json({
                 erro: 'Erro interno ao deletar anotação'
@@ -105,27 +141,27 @@ export class AnotacoesController{
         }
     }
 
-    
-    async buscarPorPagina(req: Request, res: Response): Promise <Response>{
-        try{
+
+    async buscarPorPagina(req: Request, res: Response): Promise<Response> {
+        try {
             const usuarioId = req.usuario.id;
             const id_leitura = Number(req.params.id_leitura);
             const pagina = Number(req.params.pagina);
 
-            if(isNaN(id_leitura) || isNaN(pagina)){
+            if (isNaN(id_leitura) || isNaN(pagina)) {
                 return res.status(400).json({
                     erro: 'Parâmetros inválidos'
                 })
             }
 
             const leitura = await leituras.findOne({
-                where:{
+                where: {
                     id_leitura,
                     id_usuario: usuarioId
                 }
             });
 
-            if(!leitura){
+            if (!leitura) {
                 return res.status(404).json({
                     erro: 'Leitura não encontrada'
                 })
@@ -146,7 +182,7 @@ export class AnotacoesController{
             });
 
 
-        }catch (error){
+        } catch (error) {
             console.error('Erro ao buscar anotações por páginas:', error);
             return res.status(500).json({
                 erro: 'Erro interno'

@@ -9,6 +9,7 @@ import leiturasRoutes from './routes/leiturasRoutes';
 import anotacoesRoutes from './routes/anotacoesRoutes';
 import tagsRoutes from './routes/tagsRoutes';
 import perfilRoutes from './routes/perfilRoutes';
+import dashboardRoutes from './routes/dashboardRoutes';
 import { Sequelize } from 'sequelize';
 
 //import das routes aqui
@@ -29,12 +30,11 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/upload/capa', express.static(path.join(__dirname, '../upload/capa'))); // Corrigido caminho físico para servir imagens de capas
 app.use('/api/livros', livrosRoutes);
-app.use('/api/livros/editar/:id', livrosRoutes);
-app.use('/api/livros/deletar/:id', livrosRoutes);
 app.use('/api/leituras', leiturasRoutes);
 app.use('/api/anotacoes', anotacoesRoutes);
 app.use('/api/tags', tagsRoutes);
 app.use('/api/perfil', perfilRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 
 

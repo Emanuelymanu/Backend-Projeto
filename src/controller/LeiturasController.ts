@@ -3,6 +3,7 @@ import { leituras } from '../models-auto/leituras';
 import { livros } from '../models-auto/livros';
 import { StatusLeitura, CriarLeituraDTO, LeituraResponse, ListarLeiturasQuery } from '../types/leituraTypes';
 import { Op } from 'sequelize';
+import { anotacoes } from '../models-auto/anotacoes';
 
 export class LeiturasController {
    async iniciarLeitura(req: Request<{}, {}, CriarLeituraDTO>, res: Response): Promise<Response> {
@@ -106,6 +107,50 @@ export class LeiturasController {
       }
 
 
+   }
+
+   async buscarLeitura(req: Request, res: Response): Promise<Response> {
+      try {
+         const usuarioId = (req as any).usuario.id;
+         const id = Number(req.params.id);
+
+         if (isNaN(id)) {
+            return res.status(400).json({
+               erro: 'ID inválido'
+            });
+         }
+
+         const leitura = await leituras.findOne({
+            where: {
+               id_leitura: id,
+               id_usuario: usuarioId
+            },
+            include: [
+               {
+                  model: livros,
+                  as: 'id_livro_livro'
+               },
+               {
+                  model: anotacoes,
+                  as: 'anotacos'
+               }
+            ]
+         });
+
+         if (!leitura) {
+            return res.status(404).json({
+               erro: 'Leitura não encontrada'
+            });
+         }
+
+         return res.json(leitura);
+
+      } catch (error) {
+         console.error('Erro ao buscar leitura:', error);
+         return res.status(500).json({
+            erro: 'Erro interno ao buscar leitura'
+         });
+      }
    }
 
    async listarLeituras(req: Request<{}, {}, {}, ListarLeiturasQuery>, res: Response): Promise<Response> {
