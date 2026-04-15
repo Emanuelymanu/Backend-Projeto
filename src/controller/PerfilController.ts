@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { usuarios } from '../models-auto/usuarios';
 import bcrypt from 'bcrypt';
-import { cpf as cpfValidator} from 'cpf-cnpj-validator';
+import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 import { Op } from 'sequelize';
 
@@ -101,13 +101,7 @@ export class PerfilController {
                 dadosAtualizados.cpf = cpfLimpo;
             }
 
-            if (senha!== undefined) {
-                if (!senha) {
-                    return res.status(400).json({
-                        erro: 'A senha não pode ser vazia'
-                    })
-                }
-
+            if (senha !== undefined && senha !== "") {
                 if (senha.length < 6) {
                     return res.status(400).json({
                         erro: 'A senha deve ter no mínimo 6 caracteres'
@@ -131,10 +125,10 @@ export class PerfilController {
                 });
             }
 
-        
+
             await usuario.update(dadosAtualizados);
 
-           
+
             const usuarioAtualizado = await usuarios.findByPk(usuarioId, {
                 attributes: { exclude: ['senha'] }
             });
