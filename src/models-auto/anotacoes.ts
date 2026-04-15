@@ -25,7 +25,7 @@ export class anotacoes extends Model<anotacoesAttributes, anotacoesCreationAttri
   conteudo!: string;
   created_at!: Date;
 
-  // anotacoes belongsTo leituras via id_leitura
+
   id_leitura_leitura!: leituras;
   getId_leitura_leitura!: Sequelize.BelongsToGetAssociationMixin<leituras>;
   setId_leitura_leitura!: Sequelize.BelongsToSetAssociationMixin<leituras, leiturasId>;

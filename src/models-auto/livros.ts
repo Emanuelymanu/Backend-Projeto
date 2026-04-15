@@ -7,7 +7,7 @@ export interface livrosAttributes {
   titulo: string;
   subtitulo?: string;
   autor: string;
-  tipo_obra: 'unico' | 'trilogia' | 'serie' | 'colecao';  // Tipo da obra
+  tipo_obra: 'unico' | 'trilogia' | 'serie' | 'colecao';  
   nome_serie?: string;
   ano_publicacao?: number;
   num_paginas: number;
@@ -36,7 +36,7 @@ export class livros extends Model<livrosAttributes, livrosCreationAttributes> im
   capa?: string;
 
 
-  // livros hasMany leituras via id_livro
+  
   leituras!: leituras[];
   getLeituras!: Sequelize.HasManyGetAssociationsMixin<leituras>;
   setLeituras!: Sequelize.HasManySetAssociationsMixin<leituras, leiturasId>;

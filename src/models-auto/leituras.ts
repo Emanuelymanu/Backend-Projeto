@@ -40,7 +40,7 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
   vezes_lido?: number;
 
 
-  // leituras hasMany anotacoes via id_leitura
+
   anotacos!: anotacoes[];
   getAnotacos!: Sequelize.HasManyGetAssociationsMixin<anotacoes>;
   setAnotacos!: Sequelize.HasManySetAssociationsMixin<anotacoes, anotacoesId>;
@@ -52,7 +52,6 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
   hasAnotaco!: Sequelize.HasManyHasAssociationMixin<anotacoes, anotacoesId>;
   hasAnotacos!: Sequelize.HasManyHasAssociationsMixin<anotacoes, anotacoesId>;
   countAnotacos!: Sequelize.HasManyCountAssociationsMixin;
-  // leituras hasMany leitura_tags via id_leitura
   leitura_tags!: leitura_tags[];
   getLeitura_tags!: Sequelize.HasManyGetAssociationsMixin<leitura_tags>;
   setLeitura_tags!: Sequelize.HasManySetAssociationsMixin<leitura_tags, leitura_tagsId>;
@@ -64,7 +63,7 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
   hasLeitura_tag!: Sequelize.HasManyHasAssociationMixin<leitura_tags, leitura_tagsId>;
   hasLeitura_tags!: Sequelize.HasManyHasAssociationsMixin<leitura_tags, leitura_tagsId>;
   countLeitura_tags!: Sequelize.HasManyCountAssociationsMixin;
-  // leituras belongsToMany tags via id_leitura and id_tag
+
   id_tag_tags!: tags[];
   getId_tag_tags!: Sequelize.BelongsToManyGetAssociationsMixin<tags>;
   setId_tag_tags!: Sequelize.BelongsToManySetAssociationsMixin<tags, tagsId>;
@@ -76,12 +75,12 @@ export class leituras extends Model<leiturasAttributes, leiturasCreationAttribut
   hasId_tag_tag!: Sequelize.BelongsToManyHasAssociationMixin<tags, tagsId>;
   hasId_tag_tags!: Sequelize.BelongsToManyHasAssociationsMixin<tags, tagsId>;
   countId_tag_tags!: Sequelize.BelongsToManyCountAssociationsMixin;
-  // leituras belongsTo livros via id_livro
+
   id_livro_livro!: livros;
   getId_livro_livro!: Sequelize.BelongsToGetAssociationMixin<livros>;
   setId_livro_livro!: Sequelize.BelongsToSetAssociationMixin<livros, livrosId>;
   createId_livro_livro!: Sequelize.BelongsToCreateAssociationMixin<livros>;
-  // leituras belongsTo usuarios via id_usuario
+
   id_usuario_usuario!: usuarios;
   getId_usuario_usuario!: Sequelize.BelongsToGetAssociationMixin<usuarios>;
   setId_usuario_usuario!: Sequelize.BelongsToSetAssociationMixin<usuarios, usuariosId>;

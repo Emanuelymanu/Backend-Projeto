@@ -1,11 +1,10 @@
-// src/utils/validators.ts
 export function validarCPF(cpf: string): boolean {
   const cpfLimpo = cpf.replace(/\D/g, '');
   
   if (cpfLimpo.length !== 11) return false;
   if (/^(\d)\1{10}$/.test(cpfLimpo)) return false;
   
-  // Validação dos dígitos verificadores
+
   let soma = 0;
   for (let i = 0; i < 9; i++) {
     soma += parseInt(cpfLimpo.charAt(i)) * (10 - i);

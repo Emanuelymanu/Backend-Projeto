@@ -26,7 +26,7 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
 
 
 
-  // usuarios hasMany leituras via id_usuario
+ 
   leituras!: leituras[];
   getLeituras!: Sequelize.HasManyGetAssociationsMixin<leituras>;
   setLeituras!: Sequelize.HasManySetAssociationsMixin<leituras, leiturasId>;
@@ -38,7 +38,7 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
   hasLeitura!: Sequelize.HasManyHasAssociationMixin<leituras, leiturasId>;
   hasLeituras!: Sequelize.HasManyHasAssociationsMixin<leituras, leiturasId>;
   countLeituras!: Sequelize.HasManyCountAssociationsMixin;
-  // usuarios hasMany tags via id_usuario
+
   tags!: tags[];
   getTags!: Sequelize.HasManyGetAssociationsMixin<tags>;
   setTags!: Sequelize.HasManySetAssociationsMixin<tags, tagsId>;
@@ -91,20 +91,6 @@ export class usuarios extends Model<usuariosAttributes, usuariosCreationAttribut
       sequelize,
       tableName: 'usuarios',
       timestamps: false,
-      // hooks: {
-      //   beforeCreate: async (usuario: usuarios) => {
-      //     if (usuario.senha) {
-      //       const salt = await bcrypt.genSalt(10);
-      //       usuario.senha = await bcrypt.hash(usuario.senha, salt);
-      //     }
-      //   },
-      //   beforeUpdate: async (usuario: usuarios) => {
-      //     if (usuario.senha) {
-      //       const salt = await bcrypt.genSalt(10);
-      //       usuario.senha = await bcrypt.hash(usuario.senha, salt);
-      //     }
-      //   }
-      // },
       indexes: [
         {
           name: "PRIMARY",

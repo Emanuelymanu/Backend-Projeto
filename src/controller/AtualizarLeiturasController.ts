@@ -51,7 +51,7 @@ export class AtualizarLeituraController {
                         erro: `Página atual deve estar entre 0 e ${numPaginas}`
                     })
                 }
-                // Se chegou na última página, marca como lido automaticamente
+                
                 if (pagina_atual === numPaginas) {
                     leitura.status = 'lido';
                     leitura.data_conclusao = new Date().toISOString().split('T')[0];

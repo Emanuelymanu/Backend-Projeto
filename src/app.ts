@@ -12,9 +12,6 @@ import perfilRoutes from './routes/perfilRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import { Sequelize } from 'sequelize';
 
-//import das routes aqui
-
-
 const app = express();
 
 app.use(cors({
@@ -23,8 +20,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-
 
 app.use(express.json());
 app.use('/api/auth', authRoutes);
@@ -35,19 +30,6 @@ app.use('/api/anotacoes', anotacoesRoutes);
 app.use('/api/tags', tagsRoutes);
 app.use('/api/perfil', perfilRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-
-
-
-
-//app.use('/api', nomedasrotas);
-
-
-
-
-
-
-
-
 
 sequelize.authenticate()
   .then(() => {

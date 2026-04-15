@@ -1,4 +1,3 @@
-
 import { Request, Response } from 'express';
 import { livros } from '../models-auto/livros';
 import { leituras } from '../models-auto/leituras';

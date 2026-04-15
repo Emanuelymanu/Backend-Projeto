@@ -1,5 +1,3 @@
-
-
 export interface Livro {
     id_livro: number;
     titulo: string;

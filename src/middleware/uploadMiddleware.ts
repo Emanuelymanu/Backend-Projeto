@@ -1,4 +1,3 @@
-// middleware/uploadMiddleware.ts
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -10,7 +9,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 
-// Configuração do storage
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadDir);
@@ -22,7 +21,7 @@ const storage = multer.diskStorage({
     }
 });
 
-// Filtro para apenas imagens
+
 const fileFilter = (req: any, file: any, cb: any) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -35,9 +34,9 @@ const fileFilter = (req: any, file: any, cb: any) => {
     }
 };
 
-// Exportar o middleware configurado
+
 export const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+    limits: { fileSize: 5 * 1024 * 1024 } 
 });

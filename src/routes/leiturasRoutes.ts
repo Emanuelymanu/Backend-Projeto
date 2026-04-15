@@ -9,7 +9,7 @@ const atualizarLeitura = new AtualizarLeituraController();
 
 router.use(authMiddleware);
 
-// router.get('/:id', (req, res) => leiturasController.buscarLeitura(req, res));
+
 router.post('/iniciar', authMiddleware, (req, res) => leiturasController.iniciarLeitura(req, res));
 router.get('/listar', authMiddleware, (req, res) => leiturasController.listarLeituras(req, res));
 router.get('/:id', authMiddleware, (req, res) => leiturasController.buscarLeitura(req, res));

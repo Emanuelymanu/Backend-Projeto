@@ -1,5 +1,3 @@
-
-
 export interface DashboardEstatisticas {
     total_usuarios: number;
     total_livros: number;

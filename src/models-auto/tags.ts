@@ -22,7 +22,7 @@ export class tags extends Model<tagsAttributes, tagsCreationAttributes> implemen
   nome!: string;
   cor?: string;
 
-  // tags hasMany leitura_tags via id_tag
+ 
   leitura_tags!: leitura_tags[];
   getLeitura_tags!: Sequelize.HasManyGetAssociationsMixin<leitura_tags>;
   setLeitura_tags!: Sequelize.HasManySetAssociationsMixin<leitura_tags, leitura_tagsId>;
@@ -34,7 +34,7 @@ export class tags extends Model<tagsAttributes, tagsCreationAttributes> implemen
   hasLeitura_tag!: Sequelize.HasManyHasAssociationMixin<leitura_tags, leitura_tagsId>;
   hasLeitura_tags!: Sequelize.HasManyHasAssociationsMixin<leitura_tags, leitura_tagsId>;
   countLeitura_tags!: Sequelize.HasManyCountAssociationsMixin;
-  // tags belongsToMany leituras via id_tag and id_leitura
+ 
   id_leitura_leituras!: leituras[];
   getId_leitura_leituras!: Sequelize.BelongsToManyGetAssociationsMixin<leituras>;
   setId_leitura_leituras!: Sequelize.BelongsToManySetAssociationsMixin<leituras, leiturasId>;
@@ -46,7 +46,7 @@ export class tags extends Model<tagsAttributes, tagsCreationAttributes> implemen
   hasId_leitura_leitura!: Sequelize.BelongsToManyHasAssociationMixin<leituras, leiturasId>;
   hasId_leitura_leituras!: Sequelize.BelongsToManyHasAssociationsMixin<leituras, leiturasId>;
   countId_leitura_leituras!: Sequelize.BelongsToManyCountAssociationsMixin;
-  // tags belongsTo usuarios via id_usuario
+  
   id_usuario_usuario!: usuarios;
   getId_usuario_usuario!: Sequelize.BelongsToGetAssociationMixin<usuarios>;
   setId_usuario_usuario!: Sequelize.BelongsToSetAssociationMixin<usuarios, usuariosId>;

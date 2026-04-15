@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const config = require('./config/config.js'); // ajuste o caminho se necessário
+const config = require('./config/config.js'); 
 
 const sequelize = new Sequelize(
   config.development.database,

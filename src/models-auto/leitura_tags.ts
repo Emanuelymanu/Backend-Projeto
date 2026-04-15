@@ -16,12 +16,12 @@ export class leitura_tags extends Model<leitura_tagsAttributes, leitura_tagsCrea
   id_leitura!: number;
   id_tag!: number;
 
-  // leitura_tags belongsTo leituras via id_leitura
+
   id_leitura_leitura!: leituras;
   getId_leitura_leitura!: Sequelize.BelongsToGetAssociationMixin<leituras>;
   setId_leitura_leitura!: Sequelize.BelongsToSetAssociationMixin<leituras, leiturasId>;
   createId_leitura_leitura!: Sequelize.BelongsToCreateAssociationMixin<leituras>;
-  // leitura_tags belongsTo tags via id_tag
+ 
   id_tag_tag!: tags;
   getId_tag_tag!: Sequelize.BelongsToGetAssociationMixin<tags>;
   setId_tag_tag!: Sequelize.BelongsToSetAssociationMixin<tags, tagsId>;
