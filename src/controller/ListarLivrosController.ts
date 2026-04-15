@@ -8,6 +8,8 @@ import { ListarLivrosQuery, LivroResponse } from '../types/livroTypes';
 export class ListarLivrosController {
     async listarLivros(req: Request<{}, {}, {}, ListarLivrosQuery>, res: Response): Promise<Response> {
         try {
+
+
             const {
                 page = 1,
                 limit = 10,
@@ -109,19 +111,31 @@ export class ListarLivrosController {
             }
 
 
+            
+            const usuarioId = (req as any).usuario?.id;
+
+            
+            let leiturasInclude: any = {
+                model: leituras,
+                as: 'leituras',
+                attributes: ['id_leitura', 'id_usuario', 'id_livro', 'status', 'data_inicio', 'data_conclusao', 'avaliacao', 'resenha', 'pagina_atual', 'vezes_lido'],
+                required: false
+            };
+            if (usuarioId) {
+                leiturasInclude.where = { id_usuario: usuarioId };
+            }
+            if (avaliacao_min || avaliacao_max) {
+                leiturasInclude.where = { ...(leiturasInclude.where || {}), ...avaliacaoWhere };
+                leiturasInclude.required = true;
+            }
+
             const { count, rows } = await livros.findAndCountAll({
                 where,
                 limit: limite,
                 offset,
                 order: [[ordenar_por, direcao]],
                 attributes: { exclude: ['created_at', 'updated_at'] },
-                include: avaliacao_min || avaliacao_max ? [{
-                    model: leituras,
-                    as: 'leituras',
-                    where: avaliacaoWhere,
-                    required: true,
-                    attributes: ['avaliacao']
-                }] : []
+                include: [leiturasInclude]
             });
 
 
@@ -139,18 +153,10 @@ export class ListarLivrosController {
                     ? Number(avaliacaoObj.media).toFixed(1)
                     : null;
 
+                
+                const livroData = livro.get({ plain: true });
                 return {
-                    id_livro: livro.id_livro,
-                    titulo: livro.titulo,
-                    subtitulo: livro.subtitulo,
-                    autor: livro.autor,
-                    tipo_obra: livro.tipo_obra,
-                    nome_serie: livro.nome_serie,
-                    ano_publicacao: livro.ano_publicacao,
-                    num_paginas: livro.num_paginas,
-                    editora: livro.editora,
-                    genero: livro.genero,
-                    capa: livro.capa,
+                    ...livroData,
                     avaliacao_media: mediaAvaliacao
                 };
             }));
@@ -184,14 +190,14 @@ export class ListarLivrosController {
 
     async listarTopAvaliados(req: Request, res: Response): Promise<Response> {
         try {
-            // Busca todos os livros
+            
             const livrosList = await livros.findAll({
                 attributes: [
                     'id_livro', 'titulo', 'subtitulo', 'autor', 'tipo_obra', 'nome_serie', 'ano_publicacao', 'num_paginas', 'editora', 'genero', 'capa',
                 ]
             });
 
-            // Para cada livro, calcular a média das avaliações
+        
             const livrosComMediaArray = await Promise.all(livrosList.map(async (livro) => {
                 const avaliacaoObj = await leituras.findOne({
                     where: {
@@ -207,7 +213,7 @@ export class ListarLivrosController {
                 };
             }));
 
-            // Ordenar por média de avaliação (desc) e pegar os 5 primeiros
+            
             const top5 = livrosComMediaArray
                 .sort((a, b) => (Number(b.avaliacao_media) || 0) - (Number(a.avaliacao_media) || 0))
                 .slice(0, 5);
