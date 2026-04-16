@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import fs from 'fs';
 import path from 'path';
 import { CriarLivroDTO, LivroResponse } from '../types/livroTypes';
+import { leituras } from '../models-auto/leituras';
 
 export class CadastrarLivrosController {
     async cadastrarLivro(req: Request, res: Response) {
@@ -91,6 +92,14 @@ export class CadastrarLivrosController {
                 genero,
                 capa: capaUrl
             });
+
+            if (req.usuario && req.usuario.id_usuario) {
+                await leituras.create({
+                    id_usuario: req.usuario.id_usuario,
+                    id_livro: novoLivro.id_livro,
+                    status: 'nao_lido'
+                });
+            }
 
             const resposta: LivroResponse = {
                 id_livro: novoLivro.id_livro,
