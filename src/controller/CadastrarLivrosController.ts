@@ -11,6 +11,7 @@ export class CadastrarLivrosController {
         try {
             console.log('dados recebidos:', req.body);
             console.log('arquivo recebido:', req.file);
+            console.log('req.usuario:', req.usuario);
 
             const {
                 titulo,
@@ -93,12 +94,23 @@ export class CadastrarLivrosController {
                 capa: capaUrl
             });
 
-            if (req.usuario && req.usuario.id_usuario) {
-                await leituras.create({
-                    id_usuario: req.usuario.id_usuario,
-                    id_livro: novoLivro.id_livro,
-                    status: 'nao_lido'
-                });
+            if (req.usuario && (req.usuario.id_usuario || req.usuario.id)) {
+                const idUsuario = req.usuario.id_usuario || req.usuario.id;
+                try {
+                    const leituraCriada = await leituras.create({
+                        id_usuario: idUsuario,
+                        id_livro: novoLivro.id_livro,
+                        status: 'nao_lido',
+                        data_inicio: new Date().toISOString().split('T')[0],
+                        pagina_atual: 0,
+                        vezes_lido: 0
+                    });
+                    console.log('Leitura criada:', leituraCriada?.toJSON?.() || leituraCriada);
+                } catch (err) {
+                    console.error('Erro ao criar leitura automaticamente:', err);
+                }
+            } else {
+                console.warn('Usuário não encontrado no req.usuario ao tentar criar leitura.');
             }
 
             const resposta: LivroResponse = {

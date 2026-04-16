@@ -57,7 +57,7 @@ export class LeiturasController {
          const leitura = await leituras.create({
             id_usuario: usuarioId,
             id_livro,
-            status: status || 'quero_ler',
+            status: status || 'nao_lido',
             pagina_atual: paginaAtualNum !== undefined ? paginaAtualNum : 0,
             vezes_lido: status === 'lido' ? 1 : 0,
             data_inicio: new Date().toISOString().split('T')[0]
