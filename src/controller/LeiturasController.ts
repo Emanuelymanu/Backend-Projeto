@@ -8,105 +8,116 @@ import { anotacoes } from '../models-auto/anotacoes';
 export class LeiturasController {
    async iniciarLeitura(req: Request<{}, {}, CriarLeituraDTO>, res: Response): Promise<Response> {
       try {
-         if (!req.usuario) {
-            return res.status(401).json({ erro: 'Usuário não autenticado' });
-         }
-         const { id_livro, status, pagina_atual } = req.body;
-         const paginaAtualNum = pagina_atual !== undefined ? Number(pagina_atual) : undefined;
-         const usuarioId = req.usuario.id;
-         if (!id_livro) {
-            return res.status(400).json({
-               erro: 'ID do livro é obrigatório'
-            })
-         }
+         const valid = await this.validarIniciarLeitura(req, res);
+         if (valid) return valid;
 
-         const livro = await livros.findByPk(id_livro);
-         if (!livro) {
-            return res.status(404).json({
-               erro: 'Livro não encontrado'
-            })
-         }
+         const leitura = await this.criarLeituraNoBanco(req);
 
-         const leituraExiste = await leituras.findOne({
-            where: {
-               id_usuario: usuarioId,
-               id_livro: id_livro
-            }
-         })
-
-         if (leituraExiste) {
-            return res.status(400).json({
-               erro: 'Você já possui uma leitura para este livro'
-            })
-         }
-
-         const statusValidos: StatusLeitura[] = ['nao_lido', 'quero_ler', 'lendo', 'lido', 'abandonado', 'relendo'];
-         if (status && !statusValidos.includes(status)) {
-            return res.status(400).json({
-               erro: 'status inválido'
-            });
-         }
-
-         const numPaginas = Number(livro.num_paginas);
-         if (paginaAtualNum !== undefined && (paginaAtualNum < 0 || paginaAtualNum > numPaginas)) {
-            return res.status(400).json({
-               erro: `Página atual deve estar entre 0 e ${numPaginas}`
-            })
-         }
-
-         const leitura = await leituras.create({
-            id_usuario: usuarioId,
-            id_livro,
-            status: status || 'nao_lido',
-            pagina_atual: paginaAtualNum !== undefined ? paginaAtualNum : 0,
-            vezes_lido: status === 'lido' ? 1 : 0,
-            data_inicio: new Date().toISOString().split('T')[0]
-         });
-
-         const leituraCompleta = await leituras.findByPk(leitura.id_leitura, {
-            include: [{
-               model: livros,
-               as: 'id_livro_livro'
-            }]
-         })
-
-         const resposta: LeituraResponse = {
-            id_leitura: leituraCompleta!.id_leitura,
-            id_usuario: leituraCompleta!.id_usuario,
-            id_livro: leituraCompleta!.id_livro,
-            status: leituraCompleta!.status,
-            data_inicio: leituraCompleta!.data_inicio,
-            data_conclusao: leituraCompleta!.data_conclusao,
-            avaliacao: leituraCompleta!.avaliacao,
-            resenha: leituraCompleta!.resenha,
-            pagina_atual: leituraCompleta!.pagina_atual,
-            vezes_lido: leituraCompleta!.vezes_lido,
-            livro: leituraCompleta!.id_livro_livro ? {
-               id_livro: leituraCompleta!.id_livro_livro.id_livro,
-               titulo: leituraCompleta!.id_livro_livro.titulo,
-               autor: leituraCompleta!.id_livro_livro.autor,
-               num_paginas: leituraCompleta!.id_livro_livro.num_paginas,
-               capa: leituraCompleta!.id_livro_livro.capa
-            } : undefined
-         };
+         const resposta = await this.montarRespostaLeitura(leitura.id_leitura);
 
          return res.status(201).json({
-            mensagem: 'Leitura iniciada com sucesso!',
-            leitura: resposta
-
-         })
-
-
-
-
+            mensagem: 'Leitura iniciada com sucesso!', leitura: resposta
+         });
       } catch (error) {
          console.error('Erro ao iniciar leitura:', error);
          return res.status(500).json({
             erro: 'Erro interno ao iniciar leitura'
-         })
+         });
+      }
+   }
+
+   private async validarIniciarLeitura(req: Request, res: Response) {
+      if (!req.usuario) {
+         return res.status(401).json({
+            erro: 'Usuário não autenticado'
+         });
+      }
+      const { id_livro, status, pagina_atual } = req.body;
+
+      const paginaAtualNum = pagina_atual !== undefined ? Number(pagina_atual) : undefined;
+      const usuarioId = req.usuario.id;
+
+      if (!id_livro) {
+         return res.status(400).json({
+            erro: 'ID do livro é obrigatório'
+         });
+      }
+
+      const livro = await livros.findByPk(id_livro);
+      if (!livro) {
+         return res.status(404).json({
+            erro: 'Livro não encontrado'
+         });
+      }
+
+      const leituraExiste = await leituras.findOne({ where: { id_usuario: usuarioId, id_livro: id_livro } });
+      if (leituraExiste) {
+         return res.status(400).json({
+            erro: 'Você já possui uma leitura para este livro'
+         });
+      }
+
+      const statusValidos: StatusLeitura[] = ['nao_lido', 'quero_ler', 'lendo', 'lido', 'abandonado', 'relendo'];
+      if (status && !statusValidos.includes(status)) {
+         return res.status(400).json({
+            erro: 'status inválido'
+         });
       }
 
 
+      const numPaginas = Number(livro.num_paginas);
+      if (paginaAtualNum !== undefined && (paginaAtualNum < 0 || paginaAtualNum > numPaginas)) {
+         return res.status(400).json({
+            erro: `Página atual deve estar entre 0 e ${numPaginas}`
+         });
+      }
+      return null;
+   }
+
+   private async criarLeituraNoBanco(req: Request) {
+      const { id_livro, status, pagina_atual } = req.body;
+
+      const paginaAtualNum = pagina_atual !== undefined ? Number(pagina_atual) : undefined;
+
+      const usuarioId = req.usuario.id;
+      return await leituras.create({
+         id_usuario: usuarioId,
+         id_livro,
+         status: status || 'nao_lido',
+         pagina_atual: paginaAtualNum !== undefined ? paginaAtualNum : 0,
+         vezes_lido: status === 'lido' ? 1 : 0,
+         data_inicio: new Date().toISOString().split('T')[0]
+      });
+   }
+
+   private async montarRespostaLeitura(id_leitura: number): Promise<LeituraResponse> {
+      const leituraCompleta = await leituras.findByPk(id_leitura, {
+         include: [{
+            model: livros,
+            as: 'id_livro_livro'
+         }]
+      });
+
+
+      return {
+         id_leitura: leituraCompleta!.id_leitura,
+         id_usuario: leituraCompleta!.id_usuario,
+         id_livro: leituraCompleta!.id_livro,
+         status: leituraCompleta!.status,
+         data_inicio: leituraCompleta!.data_inicio,
+         data_conclusao: leituraCompleta!.data_conclusao,
+         avaliacao: leituraCompleta!.avaliacao,
+         resenha: leituraCompleta!.resenha,
+         pagina_atual: leituraCompleta!.pagina_atual,
+         vezes_lido: leituraCompleta!.vezes_lido,
+         livro: leituraCompleta!.id_livro_livro ? {
+            id_livro: leituraCompleta!.id_livro_livro.id_livro,
+            titulo: leituraCompleta!.id_livro_livro.titulo,
+            autor: leituraCompleta!.id_livro_livro.autor,
+            num_paginas: leituraCompleta!.id_livro_livro.num_paginas,
+            capa: leituraCompleta!.id_livro_livro.capa
+         } : undefined
+      };
    }
 
    async buscarLeitura(req: Request, res: Response): Promise<Response> {

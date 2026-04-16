@@ -9,125 +9,115 @@ export class EditarLivrosController {
 
 
     async atualizarLivro(req: Request, res: Response): Promise<Response> {
-
         const file = req.file;
-
         try {
+            const valid = await this.validarAtualizarLivro(req, res);
 
-            const idParam = req.params.id;
+            if (valid) return valid;
 
+            const livro = await this.atualizarLivroNoBanco(req);
 
-            const id = Number(idParam);
-
-
-            if (isNaN(id)) {
-                if (file) fs.unlinkSync(file.path);
-                return res.status(400).json({
-                    message: 'ID inválido. O ID deve ser um número.'
-                });
-            }
-
-            const livro = await livros.findByPk(id);
-            if (!livro) {
-                if (file) fs.unlinkSync(file.path);
-                return res.status(404).json({
-                    message: 'Livro não encontrado'
-                });
-            }
-
-            const dadosAtualizados: AtualizarLivroDTO = { ...req.body };
-
-            const { status, avaliacao } = req.body;
-            const usuario = req.usuario;
-            if (usuario && (status !== undefined || avaliacao !== undefined)) {
-
-                let leitura = await leituras.findOne({
-                    where: {
-                        id_usuario: usuario.id,
-                        id_livro: id
-                    }
-                });
-                if (!leitura) {
-                    await leituras.create({
-                        id_usuario: usuario.id,
-                        id_livro: id,
-                        status: status || 'lendo',
-                        avaliacao: avaliacao !== undefined ? avaliacao : null,
-                        data_inicio: new Date().toISOString().split('T')[0]
-                    });
-                } else {
-                   
-                    if (status !== undefined) leitura.status = status;
-                    if (avaliacao !== undefined) leitura.avaliacao = avaliacao;
-                    await leitura.save();
-                }
-            }
-
-
-            if (file) {
-                if (livro.capa) {
-                    try {
-                        const nomeArquivoAntigo = livro.capa.split('/').pop();
-                        if (nomeArquivoAntigo) {
-                            const caminhoAntigo = path.join(
-                                __dirname,
-                                '..',
-                                '..',
-                                'upload',
-                                'capa',
-                                nomeArquivoAntigo
-                            );
-
-                            if (fs.existsSync(caminhoAntigo)) {
-                                fs.unlinkSync(caminhoAntigo);
-
-                            }
-                        }
-                    } catch (err) {
-                        console.error('Erro ao remover capa antiga:', err);
-                    }
-                }
-
-
-                dadosAtualizados.capa = `${req.protocol}://${req.get('host')}/upload/capa/${file.filename}`;
-
-            }
-
-            await livro.update(dadosAtualizados);
-
-            const resposta: LivroResponse = {
-                id_livro: livro.id_livro,
-                titulo: livro.titulo,
-                subtitulo: livro.subtitulo,
-                autor: livro.autor,
-                tipo_obra: livro.tipo_obra,
-                nome_serie: livro.nome_serie,
-                ano_publicacao: livro.ano_publicacao,
-                num_paginas: livro.num_paginas,
-                editora: livro.editora,
-                genero: livro.genero,
-                capa: livro.capa
-            };
+            const resposta = this.montarRespostaLivro(livro);
 
             return res.json({
-                mensagem: 'Livro atualizado com sucesso',
-                livro: resposta
+                mensagem: 'Livro atualizado com sucesso', livro: resposta
             });
-
         } catch (error) {
             if (file) {
-                try {
-                    fs.unlinkSync(file.path);
-                } catch (err) {
-                    console.error('Erro ao remover arquivo:', err);
-                }
+                try { fs.unlinkSync(file.path); } catch (err) { console.error('Erro ao remover arquivo:', err); }
             }
-
             console.error(' Erro ao atualizar livro:', error);
             return res.status(500).json({
                 message: 'Erro interno ao atualizar livro'
             });
         }
+    }
+
+    private async validarAtualizarLivro(req: Request, res: Response) {
+        const file = req.file;
+        const idParam = req.params.id;
+
+        const id = Number(idParam);
+
+        if (isNaN(id)) {
+            if (file) fs.unlinkSync(file.path);
+            return res.status(400).json({
+                message: 'ID inválido. O ID deve ser um número.'
+            });
+        }
+        const livro = await livros.findByPk(id);
+
+        if (!livro) {
+            if (file) fs.unlinkSync(file.path);
+            return res.status(404).json({ 
+                message: 'Livro não encontrado' 
+            });
+        }
+        return null;
+    }
+
+    private async atualizarLivroNoBanco(req: Request) {
+        const file = req.file;
+        const id = Number(req.params.id);
+
+        const livro = await livros.findByPk(id);
+
+        const dadosAtualizados: AtualizarLivroDTO = { ...req.body };
+
+        const { status, avaliacao } = req.body;
+
+        const usuario = req.usuario;
+
+        if (usuario && (status !== undefined || avaliacao !== undefined)) {
+            let leitura = await leituras.findOne({
+                where: {
+                    id_usuario: usuario.id, id_livro: id
+                }
+            });
+            if (!leitura) {
+                await leituras.create({
+                    id_usuario: usuario.id, id_livro: id, status: status || 'lendo', avaliacao: avaliacao !== undefined ? avaliacao : null, data_inicio: new Date().toISOString().split('T')[0]
+                });
+            } else {
+                if (status !== undefined) leitura.status = status;
+                if (avaliacao !== undefined) leitura.avaliacao = avaliacao;
+                await leitura.save();
+            }
+        }
+        if (file) {
+            if (livro!.capa) {
+                try {
+                    const nomeArquivoAntigo = livro!.capa.split('/').pop();
+
+                    if (nomeArquivoAntigo) {
+                        const caminhoAntigo = path.join(__dirname, '..', '..', 'upload', 'capa', nomeArquivoAntigo);
+                        if (fs.existsSync(caminhoAntigo)) fs.unlinkSync(caminhoAntigo);
+                    }
+
+                } catch (err) {
+                    console.error('Erro ao remover capa antiga:', err);
+                }
+            }
+            dadosAtualizados.capa = `${req.protocol}://${req.get('host')}/upload/capa/${file.filename}`;
+        }
+        await livro!.update(dadosAtualizados);
+        return livro!;
+    }
+
+    private montarRespostaLivro(livro: any): LivroResponse {
+        return {
+            id_livro: livro.id_livro,
+            titulo: livro.titulo,
+            subtitulo: livro.subtitulo,
+            autor: livro.autor,
+            tipo_obra: livro.tipo_obra,
+            nome_serie: livro.nome_serie,
+            ano_publicacao: livro.ano_publicacao,
+            num_paginas: livro.num_paginas,
+            editora: livro.editora,
+            genero: livro.genero,
+            capa: livro.capa
+        };
     }
 
 
