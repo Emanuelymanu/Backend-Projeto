@@ -1,4 +1,3 @@
-// src/controller/DashboardController.ts
 import { Request, Response } from 'express';
 import { usuarios } from '../models-auto/usuarios';
 import { livros } from '../models-auto/livros';
