@@ -11,7 +11,6 @@ export class AtualizarLeituraController {
             if (valid) return valid;
 
             const leitura = await this.atualizarLeituraNoBanco(req);
-
             const resposta = this.montarRespostaLeitura(leitura);
 
             return res.json({
@@ -30,12 +29,9 @@ export class AtualizarLeituraController {
             return res.status(401).json({ erro: 'Usuário não autenticado' });
         }
 
-        const usuarioId = req.usuario.id;
-
+        const usuarioId = req.usuario.id || req.usuario.id_usuario;
         const { id } = req.params as { id: string };
-
         const idNumero = Number(id);
-
         const { pagina_atual, status } = req.body as AtualizarLeituraDTO;
 
         if (isNaN(idNumero)) {
@@ -58,17 +54,27 @@ export class AtualizarLeituraController {
                 erro: 'Leitura não encontrada'
             });
         }
+        
         const livro = leitura.id_livro_livro;
 
         if (pagina_atual !== undefined) {
-            const numPaginas = Number(livro.num_paginas);
+            // ALTERAÇÃO: Avalia se num_paginas existe no banco local. 
+            // Se o Google Books retornou nulo, não aplicamos a validação de limite máximo para não travar o app.
+            if (livro && livro.num_paginas !== null && livro.num_paginas !== undefined) {
+                const numPaginas = Number(livro.num_paginas);
 
-            if (pagina_atual < 0 || pagina_atual > numPaginas) {
+                if (pagina_atual < 0 || pagina_atual > numPaginas) {
+                    return res.status(400).json({
+                        erro: `Página atual deve estar entre 0 e ${numPaginas}`
+                    });
+                }
+            } else if (pagina_atual < 0) {
                 return res.status(400).json({
-                    erro: `Página atual deve estar entre 0 e ${numPaginas}`
+                    erro: 'Página atual não pode ser um número negativo'
                 });
             }
         }
+        
         const statusValidos: StatusLeitura[] = ['nao_lido', 'quero_ler', 'lendo', 'lido', 'abandonado', 'relendo'];
         if (status && !statusValidos.includes(status)) {
             return res.status(400).json({
@@ -79,12 +85,8 @@ export class AtualizarLeituraController {
     }
 
     private async atualizarLeituraNoBanco(req: Request) {
-        const usuarioId = req.usuario.id;
-
+        const usuarioId = req.usuario.id || req.usuario.id_usuario;
         const { id } = req.params as { id: string };
-
-        const idNumero = Number(id);
-
         const { pagina_atual, status } = req.body as AtualizarLeituraDTO;
 
         const leitura = await leituras.findOne({
@@ -97,9 +99,10 @@ export class AtualizarLeituraController {
                 as: 'id_livro_livro'
             }]
         });
+        
         const livro = leitura.id_livro_livro;
 
-        if (pagina_atual !== undefined) {
+        if (pagina_atual !== undefined && livro && livro.num_paginas) {
             const numPaginas = Number(livro.num_paginas);
 
             if (pagina_atual === numPaginas) {
@@ -108,16 +111,24 @@ export class AtualizarLeituraController {
                 leitura.vezes_lido = (leitura.vezes_lido || 0) + 1;
             }
         }
+        
         if (status === 'lendo' && !leitura.data_inicio) {
             leitura.data_inicio = new Date().toISOString().split('T')[0];
         }
+        
         if (status === 'lido' && leitura.status !== 'lido') {
             leitura.data_conclusao = new Date().toISOString().split('T')[0];
             leitura.vezes_lido = (leitura.vezes_lido || 0) + 1;
-            leitura.pagina_atual = livro.num_paginas;
+            
+            // ALTERAÇÃO: Só iguala a página atual ao total se o total de páginas for conhecido no banco local
+            if (livro && livro.num_paginas) {
+                leitura.pagina_atual = livro.num_paginas;
+            }
         }
+        
         if (pagina_atual !== undefined) leitura.pagina_atual = pagina_atual;
         if (status) leitura.status = status;
+        
         await leitura.save();
         return leitura;
     }
@@ -162,10 +173,9 @@ export class AtualizarLeituraController {
         if (!req.usuario) {
             return res.status(401).json({ erro: 'Usuário não autenticado' });
         }
-        const usuarioId = req.usuario.id;
+        const usuarioId = req.usuario.id || req.usuario.id_usuario;
         const id = Number(req.params.id);
         const { avaliacao } = req.body;
-
 
         if (isNaN(id)) {
             return res.status(400).json({
@@ -197,14 +207,13 @@ export class AtualizarLeituraController {
     }
 
     private async atualizarAvaliacaoNoBanco(req: Request) {
-        const usuarioId = req.usuario.id;
+        const usuarioId = req.usuario.id || req.usuario.id_usuario;
         const id = Number(req.params.id);
         const { avaliacao, resenha } = req.body;
         const leitura = await leituras.findOne({ where: { id_leitura: id, id_usuario: usuarioId } });
         if (avaliacao !== undefined) leitura.avaliacao = avaliacao;
         if (resenha !== undefined) leitura.resenha = resenha;
         await leitura.save();
-
         
         return leitura;
     }

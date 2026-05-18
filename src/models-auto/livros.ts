@@ -4,26 +4,27 @@ import type { leituras, leiturasId } from './leituras';
 
 export interface livrosAttributes {
   id_livro: number;
+  id_google: string;
   titulo: string;
   subtitulo?: string;
   autor: string;
-  tipo_obra: 'unico' | 'trilogia' | 'serie' | 'colecao';  
+  tipo_obra: 'unico' | 'trilogia' | 'serie' | 'colecao';
   nome_serie?: string;
   ano_publicacao?: number;
   num_paginas: number;
   editora?: string;
   genero?: string;
-  capa?: string
-
+  capa?: string;
 }
 
 export type livrosPk = "id_livro";
 export type livrosId = livros[livrosPk];
-export type livrosOptionalAttributes = "id_livro" | "subtitulo" | "tipo_obra" | "nome_serie" | "ano_publicacao" | "num_paginas" | "editora" | "genero" | "capa";
+export type livrosOptionalAttributes = "id_livro" | "id_google" | "subtitulo" | "tipo_obra" | "nome_serie" | "ano_publicacao" | "num_paginas" | "editora" | "genero" | "capa";
 export type livrosCreationAttributes = Optional<livrosAttributes, livrosOptionalAttributes>;
 
 export class livros extends Model<livrosAttributes, livrosCreationAttributes> implements livrosAttributes {
   id_livro!: number;
+  id_google!: string;
   titulo!: string;
   subtitulo?: string;
   autor!: string;
@@ -36,7 +37,7 @@ export class livros extends Model<livrosAttributes, livrosCreationAttributes> im
   capa?: string;
 
 
-  
+
   leituras!: leituras[];
   getLeituras!: Sequelize.HasManyGetAssociationsMixin<leituras>;
   setLeituras!: Sequelize.HasManySetAssociationsMixin<leituras, leiturasId>;
@@ -56,6 +57,11 @@ export class livros extends Model<livrosAttributes, livrosCreationAttributes> im
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true
+      },
+      id_google: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        unique: true
       },
       titulo: {
         type: DataTypes.STRING(500),

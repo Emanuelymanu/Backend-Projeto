@@ -5,14 +5,52 @@ import { StatusLeitura, CriarLeituraDTO, LeituraResponse, ListarLeiturasQuery } 
 import { Op } from 'sequelize';
 import { anotacoes } from '../models-auto/anotacoes';
 
+// Interface estendida para aceitar dados vindos do front baseados na API do Google
+interface CriarLeituraGoogleDTO extends CriarLeituraDTO {
+   id_google?: string;
+   titulo?: string;
+   autor?: string;
+   num_paginas?: number;
+   capa?: string;
+}
+
 export class LeiturasController {
-   async iniciarLeitura(req: Request<{}, {}, CriarLeituraDTO>, res: Response): Promise<Response> {
+   async iniciarLeitura(req: Request<{}, {}, CriarLeituraGoogleDTO>, res: Response): Promise<Response> {
       try {
-         const valid = await this.validarIniciarLeitura(req, res);
+         if (!req.usuario) {
+            return res.status(401).json({ erro: 'Usuário não autenticado' });
+         }
+
+         const { id_livro, id_google, titulo, autor, num_paginas, capa } = req.body;
+         let livroIdFinal = id_livro;
+
+         // ALTERAÇÃO: Se o livro veio direto da busca da API e não tem ID local ainda,
+         // nós garantimos a criação ou localização dele usando findOrCreate.
+         if (!livroIdFinal && id_google) {
+            const [livroLocal] = await livros.findOrCreate({
+               where: { id_google },
+               defaults: {
+                  id_google,
+                  titulo: titulo || 'Título Desconhecido',
+                  autor: autor || 'Autor Desconhecido',
+                  num_paginas: num_paginas ? Number(num_paginas) : null,
+                  capa: capa || null
+               }
+            });
+            livroIdFinal = livroLocal.id_livro;
+         }
+
+         if (!livroIdFinal) {
+            return res.status(400).json({ erro: 'ID do livro ou ID do Google é obrigatório' });
+         }
+
+         // Ajustamos a requisição para prosseguir com o ID do livro local definido
+         req.body.id_livro = livroIdFinal;
+
+         const valid = await this.validarIniciarLeitura(req, res, num_paginas);
          if (valid) return valid;
 
          const leitura = await this.criarLeituraNoBanco(req);
-
          const resposta = await this.montarRespostaLeitura(leitura.id_leitura);
 
          return res.status(201).json({
@@ -20,69 +58,50 @@ export class LeiturasController {
          });
       } catch (error) {
          console.error('Erro ao iniciar leitura:', error);
-         return res.status(500).json({
-            erro: 'Erro interno ao iniciar leitura'
-         });
+         return res.status(500).json({ erro: 'Erro interno ao iniciar leitura' });
       }
    }
 
-   private async validarIniciarLeitura(req: Request, res: Response) {
-      if (!req.usuario) {
-         return res.status(401).json({
-            erro: 'Usuário não autenticado'
-         });
-      }
+   // Mudança na assinatura para receber o num_paginas opcional da requisição externa
+   private async validarIniciarLeitura(req: Request<{}, {}, CriarLeituraGoogleDTO>, res: Response, numPaginasExterno?: number) {
       const { id_livro, status, pagina_atual } = req.body;
-
       const paginaAtualNum = pagina_atual !== undefined ? Number(pagina_atual) : undefined;
-      const usuarioId = req.usuario.id;
-
-      if (!id_livro) {
-         return res.status(400).json({
-            erro: 'ID do livro é obrigatório'
-         });
-      }
+      const usuarioId = req.usuario!.id || req.usuario!.id_usuario;
 
       const livro = await livros.findByPk(id_livro);
       if (!livro) {
-         return res.status(404).json({
-            erro: 'Livro não encontrado'
-         });
+         return res.status(404).json({ erro: 'Livro não encontrado no banco local' });
       }
 
       const leituraExiste = await leituras.findOne({ where: { id_usuario: usuarioId, id_livro: id_livro } });
       if (leituraExiste) {
-         return res.status(400).json({
-            erro: 'Você já possui uma leitura para este livro'
-         });
+         return res.status(400).json({ erro: 'Você já possui uma leitura para este livro' });
       }
 
       const statusValidos: StatusLeitura[] = ['nao_lido', 'quero_ler', 'lendo', 'lido', 'abandonado', 'relendo'];
       if (status && !statusValidos.includes(status)) {
-         return res.status(400).json({
-            erro: 'status inválido'
-         });
+         return res.status(400).json({ erro: 'status inválido' });
       }
 
-
-      const numPaginas = Number(livro.num_paginas);
-      if (paginaAtualNum !== undefined && (paginaAtualNum < 0 || paginaAtualNum > numPaginas)) {
+      // Validação dinâmica do limite de páginas: Prioriza o banco, se estiver nulo, usa o enviado pela API
+      const numPaginasMax = livro.num_paginas ? Number(livro.num_paginas) : (numPaginasExterno ? Number(numPaginasExterno) : null);
+      
+      if (numPaginasMax && paginaAtualNum !== undefined && (paginaAtualNum < 0 || paginaAtualNum > numPaginasMax)) {
          return res.status(400).json({
-            erro: `Página atual deve estar entre 0 e ${numPaginas}`
+            erro: `Página atual deve estar entre 0 e ${numPaginasMax}`
          });
       }
       return null;
    }
 
-   private async criarLeituraNoBanco(req: Request) {
+   private async criarLeituraNoBanco(req: Request<{}, {}, CriarLeituraGoogleDTO>) {
       const { id_livro, status, pagina_atual } = req.body;
-
       const paginaAtualNum = pagina_atual !== undefined ? Number(pagina_atual) : undefined;
+      const usuarioId = req.usuario!.id || req.usuario!.id_usuario;
 
-      const usuarioId = req.usuario.id;
       return await leituras.create({
          id_usuario: usuarioId,
-         id_livro,
+         id_livro: id_livro!,
          status: status || 'nao_lido',
          pagina_atual: paginaAtualNum !== undefined ? paginaAtualNum : 0,
          vezes_lido: status === 'lido' ? 1 : 0,
@@ -97,7 +116,6 @@ export class LeiturasController {
             as: 'id_livro_livro'
          }]
       });
-
 
       return {
          id_leitura: leituraCompleta!.id_leitura,
@@ -122,45 +140,29 @@ export class LeiturasController {
 
    async buscarLeitura(req: Request, res: Response): Promise<Response> {
       try {
-         const usuarioId = (req as any).usuario.id;
+         const usuarioId = req.usuario!.id || req.usuario!.id_usuario;
          const id = Number(req.params.id);
 
          if (isNaN(id)) {
-            return res.status(400).json({
-               erro: 'ID inválido'
-            });
+            return res.status(400).json({ erro: 'ID inválido' });
          }
 
          const leitura = await leituras.findOne({
-            where: {
-               id_leitura: id,
-               id_usuario: usuarioId
-            },
+            where: { id_leitura: id, id_usuario: usuarioId },
             include: [
-               {
-                  model: livros,
-                  as: 'id_livro_livro'
-               },
-               {
-                  model: anotacoes,
-                  as: 'anotacos'
-               }
+               { model: livros, as: 'id_livro_livro' },
+               { model: anotacoes, as: 'anotacos' }
             ]
          });
 
          if (!leitura) {
-            return res.status(404).json({
-               erro: 'Leitura não encontrada'
-            });
+            return res.status(404).json({ erro: 'Leitura não encontrada' });
          }
 
          return res.json(leitura);
-
       } catch (error) {
          console.error('Erro ao buscar leitura:', error);
-         return res.status(500).json({
-            erro: 'Erro interno ao buscar leitura'
-         });
+         return res.status(500).json({ erro: 'Erro interno ao buscar leitura' });
       }
    }
 
@@ -170,11 +172,11 @@ export class LeiturasController {
             return res.status(401).json({ erro: 'Usuário não autenticado' });
          }
 
-         const usuarioId = req.usuario.id;
+         const usuarioId = req.usuario.id || req.usuario.id_usuario;
          const { status, page = 1, limit = 10 } = req.query;
 
-         const pagina = Number(page)
-         const limite = Number(limit)
+         const pagina = Number(page);
+         const limite = Number(limit);
 
          if (isNaN(pagina) || pagina < 1) {
             return res.status(400).json({ erro: 'Página inválida' });
@@ -183,8 +185,8 @@ export class LeiturasController {
             return res.status(400).json({ erro: 'Limite inválido (máximo 100)' });
          }
 
-         const offset = (Number(page) - 1) * Number(limit);
-         const where: any = { id_usuario: usuarioId }
+         const offset = (pagina - 1) * limite;
+         const where: any = { id_usuario: usuarioId };
 
          if (status) {
             where.status = status;
@@ -195,10 +197,7 @@ export class LeiturasController {
             limit: limite,
             offset,
             order: [['data_inicio', 'DESC']],
-            include: [{
-               model: livros,
-               as: 'id_livro_livro'
-            }]
+            include: [{ model: livros, as: 'id_livro_livro' }]
          });
 
          const leiturasResponse: LeituraResponse[] = rows.map(leitura => ({
@@ -223,16 +222,13 @@ export class LeiturasController {
 
          return res.json({
             total: count,
-            pagina: Number(page),
+            pagina,
             totalPaginas: Math.ceil(count / limite),
             leituras: leiturasResponse
-         })
-
+         });
       } catch (error) {
          console.error('Erro ao listar leituras:', error);
-         return res.status(500).json({
-            erro: 'Erro interno ao listar leituras'
-         })
+         return res.status(500).json({ erro: 'Erro interno ao listar leituras' });
       }
    }
 
@@ -241,40 +237,26 @@ export class LeiturasController {
          if (!req.usuario) {
             return res.status(401).json({ erro: 'Usuário não autenticado' });
          }
-         const usuarioId = req.usuario.id;
+         const usuarioId = req.usuario.id || req.usuario.id_usuario;
          const id = Number(req.params.id);
 
          if (isNaN(id)) {
-            return res.status(400).json({
-               erro: 'Id inválido'
-            })
+            return res.status(400).json({ erro: 'Id inválido' });
          }
 
          const leitura = await leituras.findOne({
-            where: {
-               id_leitura: id,
-               id_usuario: usuarioId
-            }
-         })
+            where: { id_leitura: id, id_usuario: usuarioId }
+         });
 
          if (!leitura) {
-            return res.status(404).json({
-               erro: 'Leitura não encontrada'
-            })
+            return res.status(404).json({ erro: 'Leitura não encontrada' });
          }
 
          await leitura.destroy();
-
-         return res.json({
-            mensagem: 'Leitura deletada com sucesso'
-         })
+         return res.json({ mensagem: 'Leitura deletada com sucesso' });
       } catch (error) {
          console.error('Erro ao deletar leitura:', error);
-         return res.status(500).json({
-            erro: 'Erro interno ao deletar leitura'
-         })
+         return res.status(500).json({ erro: 'Erro interno ao deletar leitura' });
       }
    }
 }
-
-

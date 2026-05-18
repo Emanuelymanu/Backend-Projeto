@@ -1,153 +1,69 @@
 import { Request, Response } from 'express';
 import { livros } from '../models-auto/livros';
-import { Op } from 'sequelize';
-import fs from 'fs';
-import path from 'path';
-import { CriarLivroDTO, LivroResponse } from '../types/livroTypes';
 import { leituras } from '../models-auto/leituras';
-
 export class CadastrarLivrosController {
+    logRecebidos(req: Request) {
+        console.log('Dados recebidos no cadastro:', req.body);
+    }
+
     async cadastrarLivro(req: Request, res: Response) {
         try {
             this.logRecebidos(req);
-            const valid = await this.validarLivro(req, res);
 
-            if (valid) return valid;
-            const novoLivro = await this.criarLivro(req);
+            const { id_google, titulo, autor } = req.body;
 
-            await this.criarLeituraSeUsuario(req, novoLivro);
-
-            const resposta = this.montarRespostaLivro(novoLivro);
-
-            console.log('Livro criado com ID:', novoLivro.id_livro);
-
-            return res.status(201).json({ mensagem: 'Livro cadastrado com sucesso', livro: resposta });
-        } catch (error: any) {
-            console.error('Erro ao cadastrar livro:', error);
-        }
-    }
-
-    private logRecebidos(req: Request) {
-        console.log('dados recebidos:', req.body);
-
-        console.log('arquivo recebido:', req.file);
-
-        console.log('req.usuario:', req.usuario);
-    }
-
-    private async validarLivro(req: Request, res: Response) {
-        const { titulo, autor, tipo_obra, nome_serie, ano_publicacao, num_paginas } = req.body;
-        const file = req.file;
-
-        if (!titulo || !autor || !tipo_obra || !num_paginas) {
-            if (file) fs.unlinkSync(file.path);
-            return res.status(400).json({ 
-                message: 'Campos obrigatórios ausentes: titulo, autor, tipo de obra e numero de paginas' 
-            });
-        }
-        const tipoObraValido: CriarLivroDTO['tipo_obra'][] = ['unico', 'trilogia', 'serie', 'colecao'];
-        if (tipo_obra && !tipoObraValido.includes(tipo_obra)) {
-            if (file) fs.unlinkSync(file.path);
-            return res.status(400).json({ 
-                message: 'Valor inválido para tipo de obra. Valores permitidos: unico, trilogia, serie, colecao' 
-            });
-        }
-        if (tipo_obra && tipo_obra !== 'unico' && !nome_serie) {
-            if (file) fs.unlinkSync(file.path);
-
-            return res.status(400).json({ 
-                message: 'nome de serie é obrigatório para obras do tipo trilogia, série ou coleção' 
-            });
-        }
-        const livroExistente = await livros.findOne({ where: { titulo, autor } });
-        if (livroExistente) {
-            if (file) fs.unlinkSync(file.path);
-
-            return res.status(409).json({ 
-                message: 'Livro com mesmo título e autor já existe' 
-            });
-        }
-        if (ano_publicacao) {
-            const anoAtual = new Date().getFullYear();
-            const ano = parseInt(ano_publicacao);
-
-            if (ano < 1400 || ano > anoAtual) {
-                if (file) fs.unlinkSync(file.path);
-                return res.status(400).json({ 
-                    message: `Ano de publicação deve ser entre 1400 e ${anoAtual + 1}` 
-                });
+            if (!id_google || !titulo || !autor) {
+                return res.status(400).json({ message: 'Campos obrigatórios ausentes: id_google, titulo e autor' });
             }
-        }
-        const paginas = parseInt(num_paginas);
-        if (paginas < 1) {
-            if (file) fs.unlinkSync(file.path);
-            return res.status(400).json({
-                 message: 'Número de páginas deve ser um inteiro positivo' 
-                });
-        }
-        return null;
-    }
+            const idUsuario = req.usuario?.id_usuario || req.usuario?.id;
+            if (!idUsuario) {
+                return res.status(401).json({
+                    message: 'Usuário não autenticado'
+                })
+            }
 
-    private async criarLivro(req: Request) {
-        const { titulo, subtitulo, autor, tipo_obra, nome_serie, ano_publicacao, num_paginas, editora, genero } = req.body;
-        const file = req.file;
+            const [livroLocal] = await livros.findOrCreate({
+                where: { id_google },
+                defaults: {
+                    id_google,
+                    titulo,
+                    autor
+                }
+            });
 
-        let capaUrl = null;
-        
-        if (file) {
-            capaUrl = `${req.protocol}://${req.get('host')}/upload/capa/${file.filename}`;
-        }
-        const paginas = parseInt(num_paginas);
-        return await livros.create({
-            titulo,
-            subtitulo,
-            autor,
-            tipo_obra: tipo_obra || 'unico',
-            nome_serie,
-            ano_publicacao: ano_publicacao ? parseInt(ano_publicacao) : null,
-            num_paginas: Number(paginas),
-            editora,
-            genero,
-            capa: capaUrl
-        });
-    }
-
-    private async criarLeituraSeUsuario(req: Request, novoLivro: any) {
-        if (req.usuario && (req.usuario.id_usuario || req.usuario.id)) {
-            const idUsuario = req.usuario.id_usuario || req.usuario.id;
-            try {
-                const leituraCriada = await leituras.create({
+            const [leitura, criada] = await leituras.findOrCreate({
+                where: {
                     id_usuario: idUsuario,
-                    id_livro: novoLivro.id_livro,
+                    id_livro: livroLocal.id_livro
+                },
+                defaults: {
+                    id_usuario: idUsuario,
+                    id_livro: livroLocal.id_livro,
                     status: 'nao_lido',
                     data_inicio: new Date().toISOString().split('T')[0],
                     pagina_atual: 0,
                     vezes_lido: 0
-                });
-                console.log('Leitura criada:', leituraCriada?.toJSON?.() || leituraCriada);
-            } catch (err) {
-                console.error('Erro ao criar leitura automaticamente:', err);
+                }
+            });
+
+            if (!criada) {
+                return res.status(409).json({ message: 'Este livro já está na sua estante!' });
             }
-        } else {
-            console.warn('Usuário não encontrado no req.usuario ao tentar criar leitura.');
+
+            console.log('Livro vinculado com sucesso. ID Local:', livroLocal.id_livro);
+
+            return res.status(201).json({
+                mensagem: 'Livro adicionado à sua estante com sucesso!',
+                livro: {
+                    id_livro: livroLocal.id_livro,
+                    id_google: livroLocal.id_google,
+                    titulo: livroLocal.titulo,
+                    autor: livroLocal.autor
+                }
+            });
+
+        } catch (error: any) {
+            console.error('Erro ao cadastrar livro:', error);
         }
     }
-
-    private montarRespostaLivro(novoLivro: any): LivroResponse {
-        return {
-            id_livro: novoLivro.id_livro,
-            titulo: novoLivro.titulo,
-            subtitulo: novoLivro.subtitulo,
-            autor: novoLivro.autor,
-            tipo_obra: novoLivro.tipo_obra,
-            nome_serie: novoLivro.nome_serie,
-            ano_publicacao: novoLivro.ano_publicacao,
-            num_paginas: novoLivro.num_paginas,
-            editora: novoLivro.editora,
-            genero: novoLivro.genero,
-            capa: novoLivro.capa
-        };
-    }
-
-
 }
