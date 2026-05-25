@@ -3,6 +3,7 @@ import { livros } from '../models-auto/livros';
 import { leituras } from '../models-auto/leituras';
 import { Op, Sequelize } from 'sequelize';
 import { ListarLivrosQuery, LivroResponse } from '../types/livroTypes';
+import { fetchFromGoogle } from '../services/googleBooksService';
 
 export class FiltroLivros {
     async obterOpcoesFiltro(req: Request<{}, {}, {}, ListarLivrosQuery>, res: Response): Promise<Response> {
@@ -111,7 +112,7 @@ export class FiltroLivros {
 
     async buscarPorGenero(req: Request, res: Response): Promise<Response> {
         try {
-            const { genero } = req.params;
+            let { genero } = req.params;
             const { page = 1, limit = 10 } = req.query;
 
             const pagina = Number(page);
@@ -136,12 +137,44 @@ export class FiltroLivros {
                 attributes: { exclude: ['created_at', 'updated_at'] }
             });
 
+            let livrosResponse = rows;
+            
+            if (livrosResponse.length === 0) {
+                try {
+                    if (Array.isArray(genero)) genero = genero[0];
+                    const items = await fetchFromGoogle(genero);
+                    if (items && items.length > 0) {
+                        livrosResponse = items.map((item: any) => {
+                            const info = item.volumeInfo;
+                            return {
+                                id_livro: null,
+                                id_google: item.id,
+                                titulo: info.title,
+                                subtitulo: info.subtitle || null,
+                                autor: info.authors ? info.authors.join(', ') : '',
+                                tipo_obra: 'unico',
+                                nome_serie: null,
+                                volume: null,
+                                total_volumes: null,
+                                ano_publicacao: info.publishedDate ? parseInt(info.publishedDate.substring(0, 4)) : null,
+                                num_paginas: info.pageCount || 0,
+                                editora: info.publisher || null,
+                                genero: info.categories ? info.categories.join(', ') : null,
+                                capa: info.imageLinks?.thumbnail || null
+                            };
+                        });
+                    }
+                } catch (err) {
+                    console.error('Erro ao buscar na Google Books API:', err);
+                }
+            }
+
             return res.json({
                 genero,
                 total: count,
                 pagina,
                 totalPaginas: Math.ceil(count / limite),
-                livros: rows
+                livros: livrosResponse
             });
 
         } catch (error) {
@@ -152,7 +185,7 @@ export class FiltroLivros {
 
     async buscarPorAutor(req: Request, res: Response): Promise<Response> {
         try {
-            const { autor } = req.params;
+            let { autor } = req.params;
             const { page = 1, limit = 10 } = req.query;
 
             const pagina = Number(page);
@@ -177,12 +210,44 @@ export class FiltroLivros {
                 attributes: { exclude: ['created_at', 'updated_at'] }
             });
 
+            let livrosResponse = rows;
+            // Se não houver resultados locais, busca na Google Books API
+            if (livrosResponse.length === 0) {
+                try {
+                    if (Array.isArray(autor)) autor = autor[0];
+                    const items = await fetchFromGoogle(autor);
+                    if (items && items.length > 0) {
+                        livrosResponse = items.map((item: any) => {
+                            const info = item.volumeInfo;
+                            return {
+                                id_livro: null,
+                                id_google: item.id,
+                                titulo: info.title,
+                                subtitulo: info.subtitle || null,
+                                autor: info.authors ? info.authors.join(', ') : '',
+                                tipo_obra: 'unico',
+                                nome_serie: null,
+                                volume: null,
+                                total_volumes: null,
+                                ano_publicacao: info.publishedDate ? parseInt(info.publishedDate.substring(0, 4)) : null,
+                                num_paginas: info.pageCount || 0,
+                                editora: info.publisher || null,
+                                genero: info.categories ? info.categories.join(', ') : null,
+                                capa: info.imageLinks?.thumbnail || null
+                            };
+                        });
+                    }
+                } catch (err) {
+                    console.error('Erro ao buscar na Google Books API:', err);
+                }
+            }
+
             return res.json({
                 autor,
                 total: count,
                 pagina,
                 totalPaginas: Math.ceil(count / limite),
-                livros: rows
+                livros: livrosResponse
             });
 
         } catch (error) {
@@ -190,7 +255,6 @@ export class FiltroLivros {
             return res.status(500).json({ erro: 'Erro interno ao buscar livros' });
         }
 
-        
     }
 
     async buscarSerie(req: Request, res: Response): Promise<Response> {

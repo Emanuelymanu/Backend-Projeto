@@ -3,6 +3,7 @@ import { livros } from '../models-auto/livros';
 import { leituras } from '../models-auto/leituras';
 import { Op, Sequelize } from 'sequelize';
 import { ListarLivrosQuery, LivroResponse } from '../types/livroTypes';
+import { fetchFromGoogle } from '../services/googleBooksService';
 
 export class ListarLivrosController {
     async listarLivros(req: Request<{}, {}, {}, ListarLivrosQuery>, res: Response): Promise<Response> {
@@ -110,10 +111,10 @@ export class ListarLivrosController {
             }
 
 
-            
+
             const usuarioId = (req as any).usuario?.id;
 
-            
+
             let leiturasInclude: any = {
                 model: leituras,
                 as: 'leituras',
@@ -128,6 +129,7 @@ export class ListarLivrosController {
                 leiturasInclude.required = true;
             }
 
+
             const { count, rows } = await livros.findAndCountAll({
                 where,
                 limit: limite,
@@ -137,9 +139,7 @@ export class ListarLivrosController {
                 include: [leiturasInclude]
             });
 
-
-            const livrosResponse = await Promise.all(rows.map(async (livro) => {
-
+            let livrosResponse = await Promise.all(rows.map(async (livro) => {
                 const avaliacaoObj = await leituras.findOne({
                     where: {
                         id_livro: livro.id_livro,
@@ -151,14 +151,43 @@ export class ListarLivrosController {
                 const mediaAvaliacao = avaliacaoObj?.media
                     ? Number(avaliacaoObj.media).toFixed(1)
                     : null;
-
-                
                 const livroData = livro.get({ plain: true });
                 return {
                     ...livroData,
                     avaliacao_media: mediaAvaliacao
                 };
             }));
+
+            // Se não houver resultados locais e houver busca, tenta buscar na Google Books API
+            if (livrosResponse.length === 0 && busca) {
+                try {
+                    const items = await fetchFromGoogle(busca);
+                    if (items && items.length > 0) {
+                        livrosResponse = items.map((item: any) => {
+                            const info = item.volumeInfo;
+                            return {
+                                id_livro: null,
+                                id_google: item.id,
+                                titulo: info.title,
+                                subtitulo: info.subtitle || null,
+                                autor: info.authors ? info.authors.join(', ') : '',
+                                tipo_obra: 'unico',
+                                nome_serie: null,
+                                volume: null,
+                                total_volumes: null,
+                                ano_publicacao: info.publishedDate ? parseInt(info.publishedDate.substring(0, 4)) : null,
+                                num_paginas: info.pageCount || 0,
+                                editora: info.publisher || null,
+                                genero: info.categories ? info.categories.join(', ') : null,
+                                capa: info.imageLinks?.thumbnail || null,
+                                avaliacao_media: info.averageRating || null
+                            };
+                        });
+                    }
+                } catch (err) {
+                    console.error('Erro ao buscar na Google Books API:', err);
+                }
+            }
 
             return res.json({
                 total: count,
@@ -189,14 +218,14 @@ export class ListarLivrosController {
 
     async listarTopAvaliados(req: Request, res: Response): Promise<Response> {
         try {
-            
+
             const livrosList = await livros.findAll({
                 attributes: [
                     'id_livro', 'titulo', 'subtitulo', 'autor', 'tipo_obra', 'nome_serie', 'ano_publicacao', 'num_paginas', 'editora', 'genero', 'capa',
                 ]
             });
 
-        
+
             const livrosComMediaArray = await Promise.all(livrosList.map(async (livro) => {
                 const avaliacaoObj = await leituras.findOne({
                     where: {
@@ -212,7 +241,7 @@ export class ListarLivrosController {
                 };
             }));
 
-            
+
             const top5 = livrosComMediaArray
                 .sort((a, b) => (Number(b.avaliacao_media) || 0) - (Number(a.avaliacao_media) || 0))
                 .slice(0, 5);

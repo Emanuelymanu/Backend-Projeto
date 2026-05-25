@@ -1,5 +1,6 @@
 export interface Livro {
     id_livro: number;
+    id_google: string;
     titulo: string;
     subtitulo?: string | null;
     autor: string;
@@ -17,6 +18,7 @@ export interface Livro {
 }
 
 export interface CriarLivroDTO {
+    id_google: string;
     titulo: string;
     subtitulo?: string;
     autor: string;
@@ -32,6 +34,7 @@ export interface CriarLivroDTO {
 }
 
 export interface AtualizarLivroDTO {
+    id_google?: string;
     titulo?: string;
     subtitulo?: string;
     autor?: string;
@@ -48,6 +51,7 @@ export interface AtualizarLivroDTO {
 
 export interface LivroResponse {
     id_livro: number;
+    id_google: string;
     titulo: string;
     subtitulo?: string | null;
     autor: string;
@@ -65,13 +69,13 @@ export interface LivroResponse {
 export interface ListarLivrosQuery {
     page?: number;
     limit?: number;
-    busca?: string;          
+    busca?: string;
     genero?: string;
     editora?: string;
     tipo_obra?: string;
     nome_serie?: string;
-    avaliacao_min?: number;    
-    avaliacao_max?: number;    
+    avaliacao_min?: number;
+    avaliacao_max?: number;
     ordenar_por?: 'titulo' | 'autor' | 'ano_publicacao' | 'num_paginas' | 'created_at';
     ordem?: 'ASC' | 'DESC';
 }

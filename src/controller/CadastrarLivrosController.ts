@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { livros } from '../models-auto/livros';
 import { leituras } from '../models-auto/leituras';
+import { fetchFromGoogle } from '../services/googleBooksService';
 export class CadastrarLivrosController {
     logRecebidos(req: Request) {
         console.log('Dados recebidos no cadastro:', req.body);
@@ -10,7 +11,24 @@ export class CadastrarLivrosController {
         try {
             this.logRecebidos(req);
 
-            const { id_google, titulo, autor } = req.body;
+            let { id_google, titulo, autor } = req.body;
+
+            if (!id_google) {
+                // Buscar pelo título e autor na Google Books API
+                if (!titulo || !autor) {
+                    return res.status(400).json({ message: 'Informe id_google ou título e autor para buscar na Google Books' });
+                }
+                const query = `${titulo} ${autor}`;
+                const items = await fetchFromGoogle(query);
+                if (!items || items.length === 0) {
+                    return res.status(404).json({ message: 'Livro não encontrado na Google Books API' });
+                }
+                // Pega o primeiro resultado
+                const book = items[0];
+                id_google = book.id;
+                titulo = book.volumeInfo.title;
+                autor = (book.volumeInfo.authors && book.volumeInfo.authors.join(', ')) || '';
+            }
 
             if (!id_google || !titulo || !autor) {
                 return res.status(400).json({ message: 'Campos obrigatórios ausentes: id_google, titulo e autor' });
@@ -64,6 +82,7 @@ export class CadastrarLivrosController {
 
         } catch (error: any) {
             console.error('Erro ao cadastrar livro:', error);
+            return res.status(500).json({ message: 'Erro interno ao cadastrar livro' });
         }
     }
 }
