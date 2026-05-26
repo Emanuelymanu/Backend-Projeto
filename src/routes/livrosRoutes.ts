@@ -27,5 +27,23 @@ router.get('/serie/:nome_serie', (req, res) => filtroLivros.buscarSerie(req, res
 
 router.get('/status/leitura', authMiddleware, (req, res) => filtroLivros.buscarPorStatusLeitura(req, res));
 
+// Rota para buscar livros diretamente na API do Google Books
+router.get('/buscar', async (req, res) => {
+    const { query } = req.query;
+    if (!query) {
+        return res.status(400).json({ erro: 'Query obrigatória' });
+    }
+    try {
+        // Log para depuração
+        console.log('GOOGLE_BOOKS_API_KEY:', process.env.GOOGLE_BOOKS_API_KEY);
+        const { fetchFromGoogle } = require('../services/googleBooksService');
+        const items = await fetchFromGoogle(query as string);
+        res.json({ livros: items });
+    } catch (err) {
+        console.error('Erro ao buscar na Google Books API:', err);
+        res.status(500).json({ erro: 'Erro ao buscar na Google Books API', detalhe: err?.message || err });
+    }
+});
+
 
 export default router;
