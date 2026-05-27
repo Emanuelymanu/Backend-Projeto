@@ -11,7 +11,7 @@ export class CadastrarLivrosController {
         try {
             this.logRecebidos(req);
 
-            let { id_google, titulo, autor } = req.body;
+            let { id_google, titulo, autor, subtitulo, tipo_obra, nome_serie, ano_publicacao, num_paginas, editora, genero, capa } = req.body;
 
             if (!id_google) {
                 // Buscar pelo título e autor na Google Books API
@@ -26,8 +26,17 @@ export class CadastrarLivrosController {
                 // Pega o primeiro resultado
                 const book = items[0];
                 id_google = book.id;
-                titulo = book.volumeInfo.title;
-                autor = (book.volumeInfo.authors && book.volumeInfo.authors.join(', ')) || '';
+                const info = book.volumeInfo;
+                titulo = info.title;
+                subtitulo = info.subtitle || null;
+                autor = (info.authors && info.authors.join(', ')) || '';
+                tipo_obra = 'unico';
+                nome_serie = null;
+                ano_publicacao = info.publishedDate ? parseInt(info.publishedDate.substring(0, 4)) : null;
+                num_paginas = info.pageCount || 0;
+                editora = info.publisher || null;
+                genero = (info.categories && info.categories[0]) || null;
+                capa = info.imageLinks && (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail) || null;
             }
 
             if (!id_google || !titulo || !autor) {
@@ -45,7 +54,15 @@ export class CadastrarLivrosController {
                 defaults: {
                     id_google,
                     titulo,
-                    autor
+                    subtitulo,
+                    autor,
+                    tipo_obra,
+                    nome_serie,
+                    ano_publicacao,
+                    num_paginas,
+                    editora,
+                    genero,
+                    capa
                 }
             });
 
@@ -72,12 +89,7 @@ export class CadastrarLivrosController {
 
             return res.status(201).json({
                 mensagem: 'Livro adicionado à sua estante com sucesso!',
-                livro: {
-                    id_livro: livroLocal.id_livro,
-                    id_google: livroLocal.id_google,
-                    titulo: livroLocal.titulo,
-                    autor: livroLocal.autor
-                }
+                livro: livroLocal.get()
             });
 
         } catch (error: any) {
