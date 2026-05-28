@@ -14,6 +14,8 @@ const listarLivros = new ListarLivrosController();
 const filtroLivros = new FiltroLivros();
 
 router.post('/cadastrar', authMiddleware, upload.single('capa'), (req, res) => cadastrarLivrosController.cadastrarLivro(req, res));
+router.post('/cadastrar-com-google', authMiddleware, upload.single('capa'), (req, res) => cadastrarLivrosController.cadastrarLivro(req, res));
+
 router.put('/editar/:id', authMiddleware, upload.single('capa'), (req, res) => editarLivrosController.atualizarLivro(req, res));
 router.delete('/deletar/:id', authMiddleware, (req, res) => editarLivrosController.deletarLivro(req, res));
 
@@ -27,14 +29,14 @@ router.get('/serie/:nome_serie', (req, res) => filtroLivros.buscarSerie(req, res
 
 router.get('/status/leitura', authMiddleware, (req, res) => filtroLivros.buscarPorStatusLeitura(req, res));
 
-// Rota para buscar livros diretamente na API do Google Books
+
 router.get('/buscar', async (req, res) => {
     const { query } = req.query;
     if (!query) {
         return res.status(400).json({ erro: 'Query obrigatória' });
     }
     try {
-        // Log para depuração
+        
         console.log('GOOGLE_BOOKS_API_KEY:', process.env.GOOGLE_BOOKS_API_KEY);
         const { fetchFromGoogle } = require('../services/googleBooksService');
         const items = await fetchFromGoogle(query as string);

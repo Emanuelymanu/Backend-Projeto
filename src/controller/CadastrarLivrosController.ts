@@ -11,7 +11,7 @@ export class CadastrarLivrosController {
         try {
             this.logRecebidos(req);
 
-            let { id_google, titulo, autor, subtitulo, tipo_obra, nome_serie, ano_publicacao, num_paginas, editora, genero, capa } = req.body;
+            let { id_google, titulo, autor, subtitulo, tipo_obra, nome_serie, ano_publicacao, num_paginas, editora, genero, capa, avaliacao_media, total_avaliacoes } = req.body;
 
             if (!id_google) {
                 // Buscar pelo título e autor na Google Books API
@@ -37,6 +37,8 @@ export class CadastrarLivrosController {
                 editora = info.publisher || null;
                 genero = (info.categories && info.categories[0]) || null;
                 capa = info.imageLinks && (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail) || null;
+                avaliacao_media = info.averageRating || null;
+                total_avaliacoes = info.ratingsCount || null;
             }
 
             if (!id_google || !titulo || !autor) {
@@ -62,7 +64,9 @@ export class CadastrarLivrosController {
                     num_paginas,
                     editora,
                     genero,
-                    capa
+                    capa,
+                    avaliacao_media,
+                    total_avaliacoes
                 }
             });
 

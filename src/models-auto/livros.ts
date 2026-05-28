@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { leituras, leiturasId } from './leituras';
 
+
 export interface livrosAttributes {
   id_livro: number;
   id_google: string;
@@ -15,11 +16,13 @@ export interface livrosAttributes {
   editora?: string;
   genero?: string;
   capa?: string;
+  avaliacao_media?: number; // averageRating do Google Books
+  total_avaliacoes?: number; // ratingsCount do Google Books
 }
 
 export type livrosPk = "id_livro";
 export type livrosId = livros[livrosPk];
-export type livrosOptionalAttributes = "id_livro" | "id_google" | "subtitulo" | "tipo_obra" | "nome_serie" | "ano_publicacao" | "num_paginas" | "editora" | "genero" | "capa";
+export type livrosOptionalAttributes = "id_livro" | "id_google" | "subtitulo" | "tipo_obra" | "nome_serie" | "ano_publicacao" | "num_paginas" | "editora" | "genero" | "capa" | "avaliacao_media" | "total_avaliacoes";
 export type livrosCreationAttributes = Optional<livrosAttributes, livrosOptionalAttributes>;
 
 export class livros extends Model<livrosAttributes, livrosCreationAttributes> implements livrosAttributes {
@@ -35,6 +38,8 @@ export class livros extends Model<livrosAttributes, livrosCreationAttributes> im
   editora?: string;
   genero?: string;
   capa?: string;
+  avaliacao_media?: number;
+  total_avaliacoes?: number;
 
 
 
