@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { AxiosError } from 'axios';
 import { CadastrarLivrosController } from '../controller/CadastrarLivrosController';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { EditarLivrosController } from '../controller/EditarLivrosController';
@@ -36,14 +37,26 @@ router.get('/buscar', async (req, res) => {
         return res.status(400).json({ erro: 'Query obrigatória' });
     }
     try {
-        
+
         console.log('GOOGLE_BOOKS_API_KEY:', process.env.GOOGLE_BOOKS_API_KEY);
         const { fetchFromGoogle } = require('../services/googleBooksService');
         const items = await fetchFromGoogle(query as string);
         res.json({ livros: items });
     } catch (err) {
+        const axiosError = err as AxiosError<{ error?: { message?: string } }>;
+        const status = axiosError.response?.status;
+        const message = axiosError.response?.data?.error?.message || axiosError.message || 'Erro ao buscar na Google Books API';
+
         console.error('Erro ao buscar na Google Books API:', err);
-        res.status(500).json({ erro: 'Erro ao buscar na Google Books API', detalhe: err?.message || err });
+
+        if (status === 429) {
+            return res.status(429).json({
+                erro: 'Limite de requisições da Google Books API atingido',
+                detalhe: message
+            });
+        }
+
+        res.status(500).json({ erro: 'Erro ao buscar na Google Books API', detalhe: message });
     }
 });
 

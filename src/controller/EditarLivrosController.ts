@@ -49,8 +49,8 @@ export class EditarLivrosController {
 
         if (!livro) {
             if (file) fs.unlinkSync(file.path);
-            return res.status(404).json({ 
-                message: 'Livro não encontrado' 
+            return res.status(404).json({
+                message: 'Livro não encontrado'
             });
         }
         return null;
@@ -107,6 +107,7 @@ export class EditarLivrosController {
     private montarRespostaLivro(livro: any): LivroResponse {
         return {
             id_livro: livro.id_livro,
+            id_google: livro.id_google,
             titulo: livro.titulo,
             subtitulo: livro.subtitulo,
             autor: livro.autor,

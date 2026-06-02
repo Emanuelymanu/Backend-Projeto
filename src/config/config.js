@@ -1,31 +1,23 @@
+const baseConfig = {
+  username: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'projeto5p',
+  host: process.env.DB_HOST || 'localhost',
+  dialect: 'mysql',
+  dialectOptions: {
+    charset: 'utf8mb4',
+  },
+};
+
 module.exports = {
   development: {
-    username: 'root',
-    password: "",
-    database: 'projeto5p',
-    host: 'localhost',
-    dialect: 'mysql',
-    dialectOptions: {
-      charset: 'utf8mb4',
-    }
+    ...baseConfig,
   },
   test: {
-    username: "root",
-    password: "",
-    database: "projeto5p_test",
-    host: "localhost",
-    dialect: "mysql",
-    dialectOptions: {
-      charset: 'utf8mb4',
-    }
-  }
-}
-
-/*"production": {
-  "username": "root",
-  "password": null,
-  "database": "database_production",
-  "host": "127.0.0.1",
-  "dialect": "mysql"
-}
-}*/
+    ...baseConfig,
+    database: process.env.DB_NAME_TEST || 'projeto5p_test',
+  },
+  production: {
+    ...baseConfig,
+  },
+};
