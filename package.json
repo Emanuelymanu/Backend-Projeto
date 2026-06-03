@@ -10,12 +10,12 @@
     "db:migrate": "npx sequelize db:migrate",
     "db:migrate:undo": "npx sequelize db:migrate:undo",
     "test": "cross-env NODE_ENV=test jest",
-    "test:e2e": "cross-env NODE_ENV=test jest --testPathPattern=__tests__/integration",
+    "test:e2e": "cross-env NODE_ENV=test jest --testPathPatterns=__tests__/integration --passWithNoTests",
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "test:coverage": "cross-env NODE_ENV=test jest --coverage",
     "test:verbose": "cross-env NODE_ENV=test jest --verbose",
-    "test:unit": "cross-env NODE_ENV=test jest --testPathPattern=__tests__/unit",
-    "test:integration": "cross-env NODE_ENV=test jest --testPathPattern=__tests__/integration"
+    "test:unit": "cross-env NODE_ENV=test jest --testPathPatterns=__tests__/unit",
+    "test:integration": "cross-env NODE_ENV=test jest --testPathPatterns=__tests__/integration"
   },
   "repository": {
     "type": "git",
