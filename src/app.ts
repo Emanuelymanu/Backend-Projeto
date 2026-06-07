@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -16,7 +15,14 @@ import { Sequelize } from 'sequelize';
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
+const allowedOrigins = [
+  'http://localhost',
+  'https://localhost',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://estantedigital.local',
+  'https://estantedigital.local'
+];
 
 app.use(cors({
   origin: (origin, callback) => {
