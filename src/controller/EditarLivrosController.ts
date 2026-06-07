@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { livros } from '../models-auto/livros';
 import { leituras } from '../models-auto/leituras';
+import { anotacoes } from '../models-auto/anotacoes';
+import { leitura_tags } from '../models-auto/leitura_tags';
+import { sequelize } from '../models-auto';
 import fs from 'fs';
 import path from 'path';
 import { AtualizarLivroDTO, LivroResponse } from '../types/livroTypes';
@@ -148,35 +151,55 @@ export class EditarLivrosController {
                 });
             }
 
+            await sequelize.transaction(async (transaction) => {
+                const leiturasDoLivro = await leituras.findAll({
+                    where: { id_livro: id },
+                    transaction
+                });
 
-            if (livro.capa) {
-                try {
-                    const nomeArquivo = livro.capa.split('/').pop();
-                    if (nomeArquivo) {
+                const idsLeituras = leiturasDoLivro.map((leitura) => leitura.id_leitura);
 
-                        const caminhoCompleto = path.join(
-                            __dirname,
-                            '..',
-                            '..',
-                            'upload',
-                            'capa',
-                            nomeArquivo
-                        );
+                if (idsLeituras.length > 0) {
+                    await anotacoes.destroy({
+                        where: { id_leitura: idsLeituras },
+                        transaction
+                    });
 
+                    await leitura_tags.destroy({
+                        where: { id_leitura: idsLeituras },
+                        transaction
+                    });
 
-
-                        if (fs.existsSync(caminhoCompleto)) {
-                            fs.unlinkSync(caminhoCompleto);
-
-                        }
-                    }
-                } catch (err) {
-                    console.error('Erro ao remover capa:', err);
+                    await leituras.destroy({
+                        where: { id_livro: id },
+                        transaction
+                    });
                 }
-            }
 
+                if (livro.capa) {
+                    try {
+                        const nomeArquivo = livro.capa.split('/').pop();
+                        if (nomeArquivo) {
+                            const caminhoCompleto = path.join(
+                                __dirname,
+                                '..',
+                                '..',
+                                'upload',
+                                'capa',
+                                nomeArquivo
+                            );
 
-            await livro.destroy();
+                            if (fs.existsSync(caminhoCompleto)) {
+                                fs.unlinkSync(caminhoCompleto);
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Erro ao remover capa:', err);
+                    }
+                }
+
+                await livro.destroy({ transaction });
+            });
 
             return res.json({
                 message: 'Livro deletado com sucesso'
