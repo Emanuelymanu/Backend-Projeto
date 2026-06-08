@@ -3,10 +3,6 @@ import { livros } from '../models-auto/livros';
 import { leituras } from '../models-auto/leituras';
 import { fetchFromGoogle } from '../services/googleBooksService';
 export class CadastrarLivrosController {
-    logRecebidos(req: Request) {
-        console.log('Dados recebidos no cadastro:', req.body);
-    }
-
     private normalizarTexto(valor: unknown): string | null {
         if (typeof valor !== 'string') {
             return valor == null ? null : String(valor);
@@ -27,8 +23,6 @@ export class CadastrarLivrosController {
 
     async cadastrarLivro(req: Request, res: Response) {
         try {
-            this.logRecebidos(req);
-
             let { id_google, titulo, autor, subtitulo, tipo_obra, nome_serie, ano_publicacao, num_paginas, editora, genero, capa, avaliacao_media, total_avaliacoes } = req.body;
 
             if (!id_google) {

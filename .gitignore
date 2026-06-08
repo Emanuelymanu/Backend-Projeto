@@ -1,56 +1,58 @@
-# Node modules
+
 node_modules/
 
-# Logs
+
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build output
+
 dist/
 build/
 
-# Environment variables
+
 .env
 .env.*
+!.env.example
+!.env*.example
 
-# OS files
+
 .DS_Store
 Thumbs.db
 
-# VSCode settings
+
 .vscode/
 
-# Uploads
+
 upload/
 
-# Coverage
+
 coverage/
 
-# TypeScript
+
 *.tsbuildinfo
 
-# Jest
+
 coverage/
 
-# Misc
+
 *.tgz
 
-# Ignore compiled JavaScript
+
 *.js
 !src/**/*.js
 
-# Ignore test output
+
 *.test.js
 *.test.ts
 
-# Ignore migrations and seeders output
+
 src/migrations/
 src/seeders/
 
-# Ignore auto-generated models
+
 src/models-auto/
 
 package-lock.json
