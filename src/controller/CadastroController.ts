@@ -4,7 +4,11 @@ import JWT from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
-const JWT_SECRET = process.env.JWT_SECRET_KEY || 'sua_chave';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET não configurado');
+}
 
 export class CadastroController {
 

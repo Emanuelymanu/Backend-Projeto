@@ -3,7 +3,11 @@ import { usuarios } from '../models-auto/usuarios';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sua_chave';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET não configurado');
+}
 
 export class LoginController {
 
@@ -69,6 +73,6 @@ export class LoginController {
     }
 
 
-   
+
 
 }
