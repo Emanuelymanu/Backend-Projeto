@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { livros } from '../models-auto/livros';
 import { leituras } from '../models-auto/leituras';
-import { fetchFromGoogle } from '../services/googleBooksService';
 export class CadastrarLivrosController {
     private normalizarTexto(valor: unknown): string | null {
         if (typeof valor !== 'string') {
@@ -25,36 +24,17 @@ export class CadastrarLivrosController {
         try {
             let { id_google, titulo, autor, subtitulo, tipo_obra, nome_serie, ano_publicacao, num_paginas, editora, genero, capa, avaliacao_media, total_avaliacoes } = req.body;
 
-            if (!id_google) {
-                // Buscar pelo título e autor na Google Books API
-                if (!titulo || !autor) {
-                    return res.status(400).json({ message: 'Informe id_google ou título e autor para buscar na Google Books' });
-                }
-                const query = `${titulo} ${autor}`;
-                const items = await fetchFromGoogle(query);
-                if (!items || items.length === 0) {
-                    return res.status(404).json({ message: 'Livro não encontrado na Google Books API' });
-                }
-                // Pega o primeiro resultado
-                const book = items[0];
-                id_google = book.id;
-                const info = book.volumeInfo;
-                titulo = info.title;
-                subtitulo = info.subtitle || null;
-                autor = (info.authors && info.authors.join(', ')) || '';
-                tipo_obra = 'unico';
-                nome_serie = null;
-                ano_publicacao = info.publishedDate ? parseInt(info.publishedDate.substring(0, 4)) : null;
-                num_paginas = info.pageCount || 0;
-                editora = info.publisher || null;
-                genero = (info.categories && info.categories[0]) || null;
-                capa = info.imageLinks && (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail) || null;
-                avaliacao_media = info.averageRating || null;
-                total_avaliacoes = info.ratingsCount || null;
+            // Arquivo enviado via multipart tem prioridade sobre o campo capa do body
+            if (req.file) {
+                capa = req.file.filename;
             }
 
-            if (!id_google || !titulo || !autor) {
-                return res.status(400).json({ message: 'Campos obrigatórios ausentes: id_google, titulo e autor' });
+            if (!titulo || !autor) {
+                return res.status(400).json({ message: 'Campos obrigatórios ausentes: titulo e autor' });
+            }
+
+            if (!id_google) {
+                id_google = `manual-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
             }
 
             const livroData = {
